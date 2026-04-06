@@ -1,0 +1,61 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Gestion Transport{% endblock %}
+
+{% block content %}
+  <div class="top-bar">
+    <div>
+      <h1><i class="fas fa-bus" style="color:var(--secondary);margin-right:10px;"></i>Transport</h1>
+      <p style="color:var(--text-muted);font-size:0.9rem;">Gérer les moyens de transport disponibles</p>
+    </div>
+    <div class="top-bar-right">
+      <div class="search-box"><i class="fas fa-search" style="color:var(--text-muted);"></i><input type="text" placeholder="Rechercher..."></div>
+      <a href="{{ path('admin_transport_new') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Ajouter</a>
+    </div>
+  </div>
+
+  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div class="stat-card blue"><div class="stat-icon"><i class="fas fa-bus"></i></div><div class="stat-info"><h3>{{ transports|filter(t => t.typeTransport == 'Bus')|length }}</h3><p>Bus</p></div></div>
+    <div class="stat-card purple"><div class="stat-icon"><i class="fas fa-shuttle-van"></i></div><div class="stat-info"><h3>{{ transports|filter(t => t.typeTransport == 'Minibus')|length }}</h3><p>Minibus</p></div></div>
+    <div class="stat-card green"><div class="stat-icon"><i class="fas fa-train"></i></div><div class="stat-info"><h3>{{ transports|filter(t => t.typeTransport == 'Train')|length }}</h3><p>Trains</p></div></div>
+    <div class="stat-card orange"><div class="stat-icon"><i class="fas fa-plane"></i></div><div class="stat-info"><h3>{{ transports|filter(t => t.typeTransport == 'Avion')|length }}</h3><p>Avions</p></div></div>
+  </div>
+
+  <!-- Transport Cards Grid -->
+  {% if transports|length > 0 %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;">
+    {% for transport in transports %}
+    <div class="dashboard-card" style="transition:var(--transition);cursor:pointer;" onmouseenter="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 40px rgba(0,0,0,0.12)'" onmouseleave="this.style.transform='';this.style.boxShadow=''">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+        <div style="display:flex;gap:14px;align-items:center;">
+          {% set bgColor = transport.typeTransport == 'Bus' ? 'linear-gradient(135deg,#42A5F5,#1565C0)' : (transport.typeTransport == 'Minibus' ? 'linear-gradient(135deg,#7C4DFF,#B388FF)' : (transport.typeTransport == 'Train' ? 'linear-gradient(135deg,#00C853,#00E676)' : 'linear-gradient(135deg,#FF6D00,#FF9100)')) %}
+          {% set icon = transport.typeTransport == 'Bus' ? 'fas fa-bus' : (transport.typeTransport == 'Minibus' ? 'fas fa-shuttle-van' : (transport.typeTransport == 'Train' ? 'fas fa-train' : 'fas fa-plane')) %}
+          <div style="width:52px;height:52px;background:{{ bgColor }};border-radius:14px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.3rem;"><i class="{{ icon }}"></i></div>
+          <div><h3 style="font-size:1rem;font-weight:700;">{{ transport.typeTransport }} {{ transport.villeDepart }}</h3><p style="font-size:0.8rem;color:var(--text-muted);">{{ transport.villeDepart }} &rarr; {{ transport.villeArrivee }}</p></div>
+        </div>
+        <span class="badge badge-success">Actif</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.85rem;color:var(--text-muted);">
+        <div><i class="fas fa-users" style="width:20px;color:var(--primary);"></i> {{ transport.nbPlaces }} places</div>
+        <div><i class="fas fa-money-bill" style="width:20px;color:var(--success);"></i> {{ transport.prix }} TND</div>
+        <div><i class="fas fa-clock" style="width:20px;color:var(--accent);"></i> {{ transport.duree }}h trajet</div>
+        <div><i class="fas fa-calendar" style="width:20px;color:#FFD600;"></i> {{ transport.dateDepart|date('d/m/Y') }}</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid #f1f5f9;">
+        <a href="{{ path('admin_transport_edit', {'id': transport.idTransport}) }}" class="btn btn-sm btn-outline" style="flex:1;justify-content:center;font-size:0.8rem;padding:8px;text-decoration:none;"><i class="fas fa-pen"></i> Modifier</a>
+        <form method="post" action="{{ path('admin_transport_delete', {'id': transport.idTransport}) }}" style="flex:1;display:flex;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce moyen de transport ?');">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ transport.idTransport) }}">
+            <button class="btn btn-sm" style="flex:1;justify-content:center;font-size:0.8rem;padding:8px;background:rgba(255,23,68,0.1);color:var(--danger);border:1px solid rgba(255,23,68,0.2);border-radius:50px;"><i class="fas fa-trash"></i> Supprimer</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+      <i class="fas fa-bus-slash" style="font-size:3rem;margin-bottom:16px;color:var(--text-muted);opacity:0.5;"></i>
+      <h3 style="font-size:1.2rem;margin-bottom:8px;color:var(--text-dark);">Aucun transport trouvé</h3>
+      <p>Commencez par ajouter un nouveau moyen de transport.</p>
+  </div>
+  {% endif %}
+{% endblock %}
