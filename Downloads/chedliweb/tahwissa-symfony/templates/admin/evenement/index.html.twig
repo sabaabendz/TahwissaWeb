@@ -1,0 +1,77 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Admin - Événements{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <div>
+        <h1><i class="fas fa-calendar-alt" style="color:var(--primary);margin-right:10px;"></i>Événements</h1>
+        <p style="color:var(--text-muted);font-size:0.9rem;">Gérer tous les événements disponibles</p>
+    </div>
+    <div class="top-bar-right">
+        <form method="get" action="{{ path('admin_evenement_index') }}" class="search-box">
+            <i class="fas fa-search" style="color:var(--text-muted);"></i>
+            <input type="text" name="search" placeholder="Rechercher..." value="{{ search }}">
+        </form>
+        <a href="{{ path('admin_evenement_new') }}" class="btn btn-accent btn-sm"><i class="fas fa-plus"></i> Nouvel Événement</a>
+    </div>
+</div>
+
+<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div class="stat-card blue"><div class="stat-icon"><i class="fas fa-calendar-alt"></i></div><div class="stat-info"><h3>{{ evenements|length }}</h3><p>Total Événements</p></div></div>
+    <div class="stat-card green"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-info"><h3>{{ evenements|filter(e => e.statut == 'DISPONIBLE')|length }}</h3><p>Disponibles</p></div></div>
+    <div class="stat-card orange"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-info"><h3>{{ evenements|filter(e => e.statut == 'COMPLET')|length }}</h3><p>Complets</p></div></div>
+    <div class="stat-card red"><div class="stat-icon"><i class="fas fa-ban"></i></div><div class="stat-info"><h3>{{ evenements|filter(e => e.statut == 'ANNULE')|length }}</h3><p>Annulés</p></div></div>
+</div>
+
+<div class="dashboard-card">
+    {% if evenements is empty %}
+        <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <h3>Aucun événement trouvé</h3>
+            <p>Commencez par créer un nouvel événement.</p>
+            <a href="{{ path('admin_evenement_new') }}" class="btn btn-primary btn-sm" style="margin-top:16px;"><i class="fas fa-plus"></i> Créer</a>
+        </div>
+    {% else %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Titre</th>
+                    <th>Lieu</th>
+                    <th>Date & Heure</th>
+                    <th>Prix</th>
+                    <th>Places</th>
+                    <th>Catégorie</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ev in evenements %}
+                <tr>
+                    <td style="font-weight:600;color:var(--text-muted);">#{{ ev.id }}</td>
+                    <td style="font-weight:600;">{{ ev.titre }}</td>
+                    <td><i class="fas fa-map-marker-alt" style="color:var(--accent);margin-right:4px;"></i>{{ ev.lieu }}</td>
+                    <td style="font-size:0.82rem;">
+                        {{ ev.dateEvent ? ev.dateEvent|date('d/m/Y') : '-' }}<br>
+                        <span style="color:var(--text-muted);">{{ ev.heureEvent ? ev.heureEvent|date('H:i') : '-' }}</span>
+                    </td>
+                    <td style="font-weight:700;">{{ ev.prix|number_format(2, ',', ' ') }} TND</td>
+                    <td><span class="badge {{ ev.nbPlaces > 10 ? 'badge-success' : (ev.nbPlaces > 0 ? 'badge-warning' : 'badge-danger') }}">{{ ev.nbPlaces }}</span></td>
+                    <td><span class="badge badge-primary">{{ ev.categorie ?? 'N/A' }}</span></td>
+                    <td><span class="badge badge-{{ ev.statutBadgeClass }}">{{ ev.statutLabel }}</span></td>
+                    <td>
+                        <a href="{{ path('admin_evenement_show', {id: ev.id}) }}" class="action-btn view" title="Voir"><i class="fas fa-eye"></i></a>
+                        <a href="{{ path('admin_evenement_edit', {id: ev.id}) }}" class="action-btn edit" title="Modifier"><i class="fas fa-pen"></i></a>
+                        <form method="post" action="{{ path('admin_evenement_delete', {id: ev.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer cet événement ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ ev.id) }}">
+                            <button type="submit" class="action-btn delete" title="Supprimer"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+{% endblock %}

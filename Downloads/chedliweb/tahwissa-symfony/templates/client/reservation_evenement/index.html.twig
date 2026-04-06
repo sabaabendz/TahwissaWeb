@@ -1,0 +1,56 @@
+{% extends 'client/layout.html.twig' %}
+{% block title %}Mes Réservations Événements{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+    <div>
+        <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:4px;">
+            <i class="fas fa-calendar-check" style="color:var(--primary);margin-right:8px;"></i>Mes Réservations Événements
+        </h1>
+        <p style="color:var(--text-muted);">{{ reservations|length }} réservation(s) au total</p>
+    </div>
+    <a href="{{ path('client_evenement_index') }}" class="btn btn-primary btn-sm"><i class="fas fa-calendar-alt"></i> Voir les événements</a>
+</div>
+
+{% if reservations is empty %}
+    <div class="empty-state" style="background:white;border-radius:var(--radius);padding:60px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
+        <i class="fas fa-calendar-times"></i>
+        <h3>Aucune réservation</h3>
+        <p>Vous n'avez pas encore réservé d'événement.</p>
+        <a href="{{ path('client_evenement_index') }}" class="btn btn-primary btn-sm" style="margin-top:16px;"><i class="fas fa-calendar-alt"></i> Découvrir les événements</a>
+    </div>
+{% else %}
+    <div style="display:flex;flex-direction:column;gap:16px;">
+        {% for res in reservations %}
+        <div style="background:white;border-radius:var(--radius);padding:24px;box-shadow:0 2px 10px rgba(0,0,0,0.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;border-left:4px solid var(--{{ res.statut == 'CONFIRMEE' ? 'success' : (res.statut == 'ANNULEE' ? 'danger' : 'warning') }});">
+            <div style="flex:1;min-width:200px;">
+                <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px;">
+                    {% if res.evenement %}
+                        <i class="fas fa-calendar-alt" style="color:var(--primary);margin-right:6px;"></i>{{ res.evenement.titre }}
+                    {% else %}
+                        <i class="fas fa-calendar-times" style="color:var(--text-muted);margin-right:6px;"></i>Événement supprimé
+                    {% endif %}
+                </div>
+                {% if res.evenement %}
+                <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">
+                    <i class="fas fa-map-marker-alt"></i> {{ res.evenement.lieu }} &nbsp;•&nbsp;
+                    <i class="fas fa-calendar-day"></i> {{ res.evenement.dateEvent ? res.evenement.dateEvent|date('d/m/Y') : 'N/A' }}
+                </div>
+                {% endif %}
+                <div style="font-size:0.82rem;color:#94a3b8;">Réservé le {{ res.dateReservation ? res.dateReservation|date('d/m/Y') : 'N/A' }} · {{ res.nbPlacesReservees }} place(s)</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                <span class="badge badge-{{ res.statutBadgeClass }}" style="font-size:0.85rem;">{{ res.statutLabel }}</span>
+                <a href="{{ path('client_reservation_evenement_show', {id: res.id}) }}" class="btn btn-outline btn-xs"><i class="fas fa-eye"></i> Détails</a>
+                {% if res.statut == 'EN_ATTENTE' %}
+                <form method="post" action="{{ path('client_reservation_evenement_cancel', {id: res.id}) }}" onsubmit="return confirm('Annuler cette réservation ?')">
+                    <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ res.id) }}">
+                    <button type="submit" class="btn btn-outline-danger btn-xs"><i class="fas fa-times"></i> Annuler</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}
