@@ -1,0 +1,83 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Destinations - Administration{% endblock %}
+
+{% block content %}
+    <div class="top-bar">
+        <h1><i class="fas fa-map-marker-alt" style="color: var(--primary);"></i> Gestion des Destinations</h1>
+        <div class="top-bar-right">
+            <a href="{{ path('admin_destination_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouvelle Destination
+            </a>
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon"><i class="fas fa-globe"></i></div>
+            <div class="stat-info">
+                <h3>{{ destinations|length }}</h3>
+                <p>Total Destinations</p>
+            </div>
+        </div>
+        <div class="stat-card purple">
+            <div class="stat-icon"><i class="fas fa-building"></i></div>
+            <div class="stat-info">
+                <h3>{{ destinations|filter(d => d.pointsInteret|length > 0)|length }}</h3>
+                <p>Avec points d'intérêt</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Pays</th>
+                    <th>Ville</th>
+                    <th>Points d'intérêt</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for destination in destinations %}
+                <tr>
+                    <td>{{ destination.idDestination }}</td>
+                    <td><strong>{{ destination.nom }}</strong></td>
+                    <td><span class="badge badge-primary">{{ destination.pays }}</span></td>
+                    <td>{{ destination.ville ?: '-' }}</td>
+                    <td><span class="badge badge-info">{{ destination.pointsInteret|length }} POI</span></td>
+                    <td>
+                        <a href="{{ path('admin_destination_edit', {'id': destination.idDestination}) }}" class="action-btn edit">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form action="{{ path('admin_destination_delete', {'id': destination.idDestination}) }}" method="post" style="display: inline-block;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ destination.idDestination) }}">
+                            <button type="submit" class="action-btn delete" onclick="return confirm('Confirmer la suppression ?')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h3>Aucune destination</h3>
+                        <p>Commencez par ajouter votre première destination</p>
+                        <a href="{{ path('admin_destination_new') }}" class="btn btn-primary mt-3">+ Ajouter</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

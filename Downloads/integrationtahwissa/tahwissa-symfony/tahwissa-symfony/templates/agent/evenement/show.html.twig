@@ -1,0 +1,60 @@
+{% extends 'agent/layout.html.twig' %}
+{% block title %}Agent - {{ evenement.titre }}{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <div>
+        <h1><i class="fas fa-calendar-alt" style="color:var(--primary);margin-right:10px;"></i>Détail Événement</h1>
+    </div>
+    <div class="top-bar-right">
+        <a href="{{ path('agent_evenement_edit', {id: evenement.id}) }}" class="btn btn-primary btn-sm"><i class="fas fa-pen"></i> Modifier</a>
+        <a href="{{ path('agent_evenement_index') }}" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left"></i> Retour</a>
+    </div>
+</div>
+
+<div class="detail-card">
+    <div class="detail-header">
+        <div>
+            <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:8px;">{{ evenement.titre }}</h2>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span class="badge badge-primary"><i class="fas fa-map-marker-alt"></i> {{ evenement.lieu }}</span>
+                <span class="badge badge-purple">{{ evenement.categorie ?? 'Non classé' }}</span>
+                <span class="badge badge-{{ evenement.statutBadgeClass }}">{{ evenement.statutLabel }}</span>
+            </div>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size:2rem;font-weight:800;color:var(--primary);">{{ evenement.prix|number_format(2, ',', ' ') }} TND</div>
+            <div style="font-size:0.85rem;color:var(--text-muted);">par place</div>
+        </div>
+    </div>
+
+    {% if evenement.description %}
+    <div style="margin-bottom:24px;padding:16px;background:#f8fafc;border-radius:var(--radius-sm);color:#475569;font-size:0.92rem;line-height:1.7;">
+        {{ evenement.description }}
+    </div>
+    {% endif %}
+
+    <div class="detail-grid">
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-calendar-day"></i> Date</div>
+            <div class="value">{{ evenement.dateEvent ? evenement.dateEvent|date('d/m/Y') : 'N/A' }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-clock"></i> Heure</div>
+            <div class="value">{{ evenement.heureEvent ? evenement.heureEvent|date('H:i') : 'N/A' }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-chair"></i> Places disponibles</div>
+            <div class="value">
+                <span class="badge {{ evenement.nbPlaces > 10 ? 'badge-success' : (evenement.nbPlaces > 0 ? 'badge-warning' : 'badge-danger') }}" style="font-size:0.9rem;">
+                    {{ evenement.nbPlaces }} places
+                </span>
+            </div>
+        </div>
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-tag"></i> Catégorie</div>
+            <div class="value">{{ evenement.categorie ?? 'Non définie' }}</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
