@@ -1,0 +1,137 @@
+{# Client layout - Front office with top navbar instead of sidebar #}
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+<style>
+    body { background: #f0f4f8; }
+    .client-navbar {
+        background: white;
+        padding: 12px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    .client-navbar .brand {
+        display: flex; align-items: center; gap: 10px;
+        text-decoration: none; font-weight: 800; font-size: 1.3rem; color: var(--text-dark);
+    }
+    .client-navbar .brand span {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .client-nav { display: flex; align-items: center; gap: 24px; list-style: none; }
+    .client-nav a {
+        color: #64748b; text-decoration: none; font-weight: 500; font-size: 0.9rem;
+        transition: var(--transition); padding: 8px 16px; border-radius: 50px;
+    }
+    .client-nav a:hover, .client-nav a.active { color: var(--primary); background: rgba(21,101,192,0.06); }
+    .client-main { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+    body.dark { background: #0f172a !important; color: #e2e8f0; }
+body.dark .client-navbar { background: #1e293b; box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+body.dark .client-nav a { color: #94a3b8; }
+body.dark .client-nav a:hover, body.dark .client-nav a.active { color: #60a5fa; background: rgba(96,165,250,0.1); }
+body.dark .voyage-card { background: #1e293b !important; box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; }
+body.dark .voyage-card h3 { color: #f1f5f9; }
+body.dark .voyage-card .destination, body.dark .voyage-card p { color: #94a3b8; }
+body.dark .voyage-card-footer { border-top-color: #334155 !important; background: #1e293b !important; }
+body.dark .btn-react[data-type="LIKE"]:not([style*="#00C853"]) { background: #1e293b !important; color: #94a3b8 !important; }
+body.dark .btn-react[data-type="DISLIKE"]:not([style*="#FF1744"]) { background: #1e293b !important; color: #94a3b8 !important; }
+body.dark .dashboard-card, body.dark .detail-card, body.dark .form-card { background: #1e293b !important; }
+body.dark #theme-toggle { border-color: #334155; color: #94a3b8; }
+body.dark .search-box { background: #1e293b !important; border-color: #334155 !important; }
+body.dark input, body.dark select, body.dark textarea { background: #0f172a !important; color: #e2e8f0 !important; border-color: #334155 !important; }
+</style>
+{% endblock %}
+
+{% block body %}
+<nav class="client-navbar">
+    <a href="{{ path('app_home') }}" class="brand">
+        <div style="width:38px;height:38px;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">✈️</div>
+        <span>Tahwissa</span>
+    </a>
+    <ul class="client-nav">
+        <li><a href="{{ path('client_voyage_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_voyage' ? 'active' : '' }}"><i class="fas fa-plane"></i> Voyages</a></li>
+        <li><a href="{{ path('client_reservation_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_reservation' and not (app.request.attributes.get('_route') starts with 'client_reservation_evenement') ? 'active' : '' }}"><i class="fas fa-ticket-alt"></i> Rés. Voyages</a></li>
+        <li><a href="{{ path('client_evenement_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_evenement' ? 'active' : '' }}"><i class="fas fa-calendar-alt"></i> Événements</a></li>
+        <li><a href="{{ path('client_reservation_evenement_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_reservation_evenement' ? 'active' : '' }}"><i class="fas fa-calendar-check"></i> Rés. Événements</a></li>
+
+        <li><a href="{{ path('client_transport_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_transport' ? 'active' : '' }}"><i class="fas fa-bus"></i> Transport</a></li>
+        <li><a href="{{ path('client_reservation_transport_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_reservation_transport' ? 'active' : '' }}"><i class="fas fa-calendar-alt"></i> Rés. Transport</a></li>
+        <li><a href="{{ path('client_reclamation_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_reclamation' ? 'active' : '' }}"><i class="fas fa-flag"></i> Réclamations</a></li>
+        <li>
+            {% if app.user %}
+                <span style="color:#64748b;font-size:0.85rem;padding:8px 12px;">
+                    <i class="fas fa-user-circle"></i> {{ app.user.name }}
+                </span>
+                <a href="{{ path('app_logout') }}" style="color:var(--danger);"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+            {% else %}
+                <a href="{{ path('app_login') }}"><i class="fas fa-sign-in-alt"></i> Connexion</a>
+            {% endif %}
+        </li>
+        <li>
+    <button id="theme-toggle" onclick="toggleTheme()" style="background:none;border:2px solid #e2e8f0;border-radius:50px;padding:6px 14px;cursor:pointer;font-size:0.82rem;font-weight:600;color:#64748b;display:flex;align-items:center;gap:6px;">
+        <span id="theme-icon">🌙</span><span id="theme-label">Nuit</span>
+    </button>
+</li>
+    </ul>
+</nav>
+
+<div class="client-main">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }}">
+                <i class="fas fa-{{ label == 'success' ? 'check-circle' : (label == 'danger' ? 'exclamation-circle' : (label == 'warning' ? 'exclamation-triangle' : 'info-circle')) }}"></i>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {% block content %}{% endblock %}
+</div>
+<script>
+function toggleTheme() {
+    const dark = document.body.classList.toggle('dark');
+    localStorage.setItem('tahwissa-theme', dark ? 'dark' : 'light');
+    document.getElementById('theme-icon').textContent = dark ? '☀️' : '🌙';
+    document.getElementById('theme-label').textContent = dark ? 'Jour' : 'Nuit';
+}
+(function() {
+    if (localStorage.getItem('tahwissa-theme') === 'dark') {
+        document.body.classList.add('dark');
+        const icon = document.getElementById('theme-icon');
+        const label = document.getElementById('theme-label');
+        if (icon) { icon.textContent = '☀️'; label.textContent = 'Jour'; }
+    }
+})();
+
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-react');
+    if (!btn) return;
+    const container = btn.closest('.reaction-btns');
+    const url = container.dataset.reactUrl;
+    const type = btn.dataset.type;
+    const body = new FormData();
+    body.append('type', type);
+
+    fetch(url, { method: 'POST', body, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) { alert(data.error); return; }
+        const likeBtn = container.querySelector('[data-type="LIKE"]');
+        const dislikeBtn = container.querySelector('[data-type="DISLIKE"]');
+        likeBtn.querySelector('.like-count').textContent = data.likes;
+        dislikeBtn.querySelector('.dislike-count').textContent = data.dislikes;
+        const grey = '#f1f5f9', greyText = '#64748b';
+        likeBtn.style.background = data.userReaction === 'LIKE' ? '#00C853' : grey;
+        likeBtn.style.color = data.userReaction === 'LIKE' ? 'white' : greyText;
+        dislikeBtn.style.background = data.userReaction === 'DISLIKE' ? '#FF1744' : grey;
+        dislikeBtn.style.color = data.userReaction === 'DISLIKE' ? 'white' : greyText;
+    })
+    .catch(() => alert('Erreur réseau'));
+});
+</script>
+{% endblock %}

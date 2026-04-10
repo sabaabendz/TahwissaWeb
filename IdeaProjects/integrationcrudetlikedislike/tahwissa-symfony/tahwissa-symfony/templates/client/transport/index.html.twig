@@ -1,0 +1,44 @@
+{% extends 'client/layout.html.twig' %}
+
+{% block title %}Nos Transports{% endblock %}
+
+{% block content %}
+<div class="top-bar" style="margin-bottom: 24px;">
+    <div>
+        <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Moyens de Transport</h1>
+        <p style="color: var(--text-muted);">Appréciez un voyage de qualité dans nos meilleurs véhicules.</p>
+    </div>
+</div>
+
+{% if transports|length > 0 %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;">
+    {% for transport in transports %}
+    <div class="dashboard-card" style="transition:var(--transition);cursor:pointer;" onmouseenter="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 40px rgba(0,0,0,0.12)'" onmouseleave="this.style.transform='';this.style.boxShadow=''">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+        <div style="display:flex;gap:14px;align-items:center;">
+          {% set bgColor = transport.typeTransport == 'Bus' ? 'linear-gradient(135deg,#42A5F5,#1565C0)' : (transport.typeTransport == 'Minibus' ? 'linear-gradient(135deg,#7C4DFF,#B388FF)' : (transport.typeTransport == 'Train' ? 'linear-gradient(135deg,#00C853,#00E676)' : 'linear-gradient(135deg,#FF6D00,#FF9100)')) %}
+          {% set icon = transport.typeTransport == 'Bus' ? 'fas fa-bus' : (transport.typeTransport == 'Minibus' ? 'fas fa-shuttle-van' : (transport.typeTransport == 'Train' ? 'fas fa-train' : 'fas fa-plane')) %}
+          <div style="width:52px;height:52px;background:{{ bgColor }};border-radius:14px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.3rem;"><i class="{{ icon }}"></i></div>
+          <div><h3 style="font-size:1rem;font-weight:700;">{{ transport.typeTransport }}</h3><p style="font-size:0.8rem;color:var(--text-muted);">{{ transport.villeDepart }} &rarr; {{ transport.villeArrivee }}</p></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.85rem;color:var(--text-muted);">
+        <div><i class="fas fa-users" style="width:20px;color:var(--primary);"></i> {{ transport.nbPlaces }} places</div>
+        <div><i class="fas fa-money-bill" style="width:20px;color:var(--success);"></i> {{ transport.prix }} TND</div>
+        <div><i class="fas fa-clock" style="width:20px;color:var(--accent);"></i> {{ transport.duree }}h trajet</div>
+        <div><i class="fas fa-calendar" style="width:20px;color:#FFD600;"></i> {{ transport.dateDepart|date('d/m/Y') }}</div>
+      </div>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid #f1f5f9;">
+        <a href="{{ path('client_reservation_transport_new', {'transportId': transport.idTransport}) }}" class="btn btn-primary" style="width:100%;justify-content:center;"><i class="fas fa-ticket-alt"></i> Réserver maintenant</a>
+      </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <i class="fas fa-bus-slash" style="font-size:3rem;margin-bottom:16px;color:var(--text-muted);opacity:0.5;"></i>
+    <h3 style="font-size:1.2rem;color:var(--text-dark);">Aucun transport disponible</h3>
+    <p>Revenez plus tard pour découvrir nos offres.</p>
+</div>
+{% endif %}
+{% endblock %}
