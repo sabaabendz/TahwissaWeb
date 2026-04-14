@@ -1,0 +1,72 @@
+{% extends 'client/layout.html.twig' %}
+{% block title %}Événements{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:32px;">
+    <h1 style="font-size:2rem;font-weight:800;margin-bottom:8px;">
+        <i class="fas fa-calendar-alt" style="color:var(--primary);margin-right:10px;"></i>Événements à venir
+    </h1>
+    <p style="color:var(--text-muted);">Découvrez et réservez les prochains événements</p>
+
+    <form method="get" action="{{ path('client_evenement_index') }}" class="search-box" style="margin-top:16px;max-width:400px;">
+        <i class="fas fa-search" style="color:var(--text-muted);"></i>
+        <input type="text" name="search" placeholder="Rechercher un événement..." value="{{ search }}">
+        <button type="submit" style="background:none;border:none;cursor:pointer;color:var(--primary);font-weight:600;font-size:0.85rem;">OK</button>
+    </form>
+</div>
+
+{% if evenements is empty %}
+    <div class="empty-state">
+        <i class="fas fa-calendar-times"></i>
+        <h3>Aucun événement disponible</h3>
+        <p>Revenez bientôt pour découvrir nos prochains événements.</p>
+    </div>
+{% else %}
+    <div class="voyage-grid">
+        {% for ev in evenements %}
+        <div class="voyage-card">
+            <div class="voyage-card-image" style="background:linear-gradient(135deg,
+                {% if ev.categorie == 'Musique' %}#7C4DFF,#E040FB
+                {% elseif ev.categorie == 'Sport' %}#00C853,#69F0AE
+                {% elseif ev.categorie == 'Art' %}#FF6D00,#FFAB40
+                {% elseif ev.categorie == 'Culture' %}#1565C0,#42A5F5
+                {% elseif ev.categorie == 'Technologie' %}#00B0FF,#00E5FF
+                {% else %}#455A64,#78909C{% endif %});">
+                <span style="font-size:3.5rem;">
+                    {% if ev.categorie == 'Musique' %}🎵
+                    {% elseif ev.categorie == 'Sport' %}🏅
+                    {% elseif ev.categorie == 'Art' %}🎨
+                    {% elseif ev.categorie == 'Culture' %}🎭
+                    {% elseif ev.categorie == 'Technologie' %}💻
+                    {% elseif ev.categorie == 'Cinéma' %}🎬
+                    {% elseif ev.categorie == 'Gastronomie' %}🍽️
+                    {% else %}🎉{% endif %}
+                </span>
+                <span class="badge badge-{{ ev.statutBadgeClass }} category-badge">{{ ev.statutLabel }}</span>
+            </div>
+            <div class="voyage-card-body">
+                <h3>{{ ev.titre }}</h3>
+                <div class="destination"><i class="fas fa-map-marker-alt"></i> {{ ev.lieu }}</div>
+                <div class="info-row">
+                    <span><i class="fas fa-calendar-day" style="color:var(--primary);"></i> {{ ev.dateEvent ? ev.dateEvent|date('d/m/Y') : 'N/A' }}</span>
+                    <span><i class="fas fa-clock" style="color:var(--secondary);"></i> {{ ev.heureEvent ? ev.heureEvent|date('H:i') : 'N/A' }}</span>
+                </div>
+                <div class="info-row">
+                    <span><i class="fas fa-chair" style="color:var(--accent);"></i> {{ ev.nbPlaces }} places</span>
+                    <span class="badge badge-primary">{{ ev.categorie ?? 'Autre' }}</span>
+                </div>
+                <div class="price">{{ ev.prix|number_format(2, ',', ' ') }} TND</div>
+            </div>
+            <div class="voyage-card-footer">
+                <a href="{{ path('client_evenement_show', {id: ev.id}) }}" class="btn btn-outline btn-xs"><i class="fas fa-eye"></i> Détails</a>
+                {% if ev.statut == 'DISPONIBLE' %}
+                    <a href="{{ path('client_reservation_evenement_new', {evenementId: ev.id}) }}" class="btn btn-primary btn-xs"><i class="fas fa-calendar-check"></i> Réserver</a>
+                {% else %}
+                    <span class="badge badge-{{ ev.statutBadgeClass }}">{{ ev.statutLabel }}</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

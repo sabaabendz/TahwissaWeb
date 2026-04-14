@@ -1,0 +1,112 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Admin - Utilisateurs{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <div>
+        <h1><i class="fas fa-users" style="color:var(--secondary);margin-right:10px;"></i>Gestion des Utilisateurs</h1>
+        <p style="color:var(--text-muted);font-size:0.9rem;">Gérer les comptes utilisateurs, agents et administrateurs</p>
+    </div>
+    <div class="top-bar-right">
+        <form method="get" action="{{ path('admin_user_index') }}" class="search-box">
+            <i class="fas fa-search" style="color:var(--text-muted);"></i>
+            <input type="text" name="search" placeholder="Rechercher..." value="{{ search }}">
+            {% if currentRole %}<input type="hidden" name="role" value="{{ currentRole }}">{% endif %}
+        </form>
+        <a href="{{ path('admin_user_new') }}" class="btn btn-accent btn-sm"><i class="fas fa-user-plus"></i> Nouvel Utilisateur</a>
+    </div>
+</div>
+
+<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+    <div class="stat-card blue">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-info"><h3>{{ stats.total }}</h3><p>Total Utilisateurs</p></div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+        <div class="stat-info"><h3>{{ stats.active }}</h3><p>Actifs</p></div>
+    </div>
+    <div class="stat-card purple">
+        <div class="stat-icon"><i class="fas fa-envelope-check"></i></div>
+        <div class="stat-info"><h3>{{ stats.verified }}</h3><p>Vérifiés</p></div>
+    </div>
+</div>
+
+{# Role filter bar #}
+<div class="filter-bar" style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+    <a href="{{ path('admin_user_index') }}" class="filter-btn {{ currentRole == '' ? 'active' : '' }}" style="padding:8px 18px;border-radius:50px;text-decoration:none;font-size:0.85rem;font-weight:600;transition:all 0.3s;{% if currentRole == '' %}background:linear-gradient(135deg, var(--primary), var(--secondary));color:white;{% else %}background:white;color:var(--text-dark);border:1px solid #e2e8f0;{% endif %}">Tous</a>
+    {% for role in roles %}
+    <a href="{{ path('admin_user_index', {role: role.name}) }}" class="filter-btn {{ currentRole == role.name ? 'active' : '' }}" style="padding:8px 18px;border-radius:50px;text-decoration:none;font-size:0.85rem;font-weight:600;transition:all 0.3s;{% if currentRole == role.name %}background:linear-gradient(135deg, var(--primary), var(--secondary));color:white;{% else %}background:white;color:var(--text-dark);border:1px solid #e2e8f0;{% endif %}">{{ role.name }}</a>
+    {% endfor %}
+</div>
+
+<div class="dashboard-card">
+    {% if users is empty %}
+        <div class="empty-state" style="text-align:center;padding:60px;color:var(--text-muted);">
+            <i class="fas fa-user-slash" style="font-size:3rem;margin-bottom:16px;opacity:0.3;"></i>
+            <p>Aucun utilisateur trouvé</p>
+        </div>
+    {% else %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th><th>Nom</th><th>Email</th><th>Rôle</th><th>Statut</th><th>Créé le</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>#{{ u.id }}</td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.85rem;">
+                                {{ u.firstName ? u.firstName|first|upper : u.email|first|upper }}
+                            </div>
+                            <div>
+                                <div style="font-weight:600;">{{ u.name }}</div>
+                                {% if u.phone %}<div style="font-size:0.75rem;color:var(--text-muted);">{{ u.phone }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td style="color:var(--text-muted);font-size:0.85rem;">{{ u.email }}</td>
+                    <td>
+                        {% if u.role %}
+                            {% if u.role.name == 'ADMIN' %}
+                                <span class="badge badge-danger">👑 Admin</span>
+                            {% elseif u.role.name == 'AGENT' %}
+                                <span class="badge badge-primary">🛡️ Agent</span>
+                            {% else %}
+                                <span class="badge badge-info">👤 User</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge" style="background:#f1f5f9;color:#94a3b8;">Non défini</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if u.isActive %}
+                            <span class="badge badge-success">✅ Actif</span>
+                        {% else %}
+                            <span class="badge badge-danger">🚫 Inactif</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size:0.85rem;color:var(--text-muted);">{{ u.createdAt ? u.createdAt|date('d/m/Y') : '-' }}</td>
+                    <td>
+                        <div style="display:flex;gap:6px;align-items:center;">
+                            <a href="{{ path('admin_user_show', {id: u.id}) }}" class="btn btn-info btn-xs" title="Voir"><i class="fas fa-eye"></i></a>
+                            <a href="{{ path('admin_user_edit', {id: u.id}) }}" class="btn btn-primary btn-xs" title="Modifier"><i class="fas fa-pen"></i></a>
+                            <a href="{{ path('admin_user_toggle_active', {id: u.id}) }}" class="btn {{ u.isActive ? 'btn-warning' : 'btn-success' }} btn-xs" title="{{ u.isActive ? 'Désactiver' : 'Activer' }}">
+                                <i class="fas fa-{{ u.isActive ? 'ban' : 'check' }}"></i>
+                            </a>
+                            <form method="post" action="{{ path('admin_user_delete', {id: u.id}) }}" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ u.id) }}">
+                                <button type="submit" class="btn btn-danger btn-xs" title="Supprimer"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Points d'intérêt - Administration{% endblock %}
+
+{% block content %}
+    <div class="top-bar">
+        <h1><i class="fas fa-landmark" style="color: var(--primary);"></i> Points d'intérêt</h1>
+        <div class="top-bar-right">
+            <a href="{{ path('admin_pointinteret_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouveau POI
+            </a>
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon"><i class="fas fa-map-pin"></i></div>
+            <div class="stat-info">
+                <h3>{{ pointsInteret|length }}</h3>
+                <p>Total POI</p>
+            </div>
+        </div>
+        {% for type, count in stats %}
+        <div class="stat-card purple">
+            <div class="stat-icon">
+                <i class="fas fa-{{ type == 'monument' ? 'landmark' : type == 'plage' ? 'umbrella-beach' : type == 'musée' ? 'museum' : 'tag' }}"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ count }}</h3>
+                <p>{{ type|capitalize }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="filter-bar">
+        <a href="{{ path('admin_pointinteret_index') }}" class="filter-btn {{ not currentType ? 'active' }}">Tous</a>
+        {% for type in ['monument', 'plage', 'musée', 'restaurant', 'hôtel'] %}
+            <a href="{{ path('admin_pointinteret_index', {'type': type}) }}" class="filter-btn {{ currentType == type ? 'active' }}">
+                {{ type|capitalize }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="dashboard-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Type</th>
+                    <th>Destination</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for point in pointsInteret %}
+                <tr>
+                    <td>{{ point.idPointInteret }}</td>
+                    <td><strong>{{ point.nom }}</strong></td>
+                    <td>
+                        <span class="badge badge-{{ point.type == 'monument' ? 'primary' : point.type == 'plage' ? 'info' : 'warning' }}">
+                            {{ point.type|capitalize }}
+                        </span>
+                    </td>
+                    <td>{{ point.destination.nom }} ({{ point.destination.pays }})</td>
+                    <td>
+                        <a href="{{ path('admin_pointinteret_edit', {'id': point.idPointInteret}) }}" class="action-btn edit">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form action="{{ path('admin_pointinteret_delete', {'id': point.idPointInteret}) }}" method="post" style="display: inline-block;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ point.idPointInteret) }}">
+                            <button type="submit" class="action-btn delete" onclick="return confirm('Confirmer la suppression ?')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        <i class="fas fa-map-pin"></i>
+                        <h3>Aucun point d'intérêt</h3>
+                        <p>Ajoutez des lieux à visiter pour vos destinations</p>
+                        <a href="{{ path('admin_pointinteret_new') }}" class="btn btn-primary mt-3">+ Ajouter</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

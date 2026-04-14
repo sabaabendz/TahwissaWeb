@@ -1,0 +1,147 @@
+{% extends 'client/layout.html.twig' %}
+{% block title %}Réservation #{{ reservation.id }}{% endblock %}
+
+{% block content %}
+<a href="{{ path('client_reservation_index') }}" style="color:var(--primary);text-decoration:none;font-size:0.9rem;display:inline-flex;align-items:center;gap:6px;margin-bottom:24px;">
+    <i class="fas fa-arrow-left"></i> Retour à mes réservations
+</a>
+
+<div class="detail-card">
+    <div class="detail-header">
+        <div>
+            <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px;">Réservation #{{ reservation.id }}</div>
+            <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;margin-bottom:8px;">
+                {% if reservation.voyage %}{{ reservation.voyage.titre }}{% else %}Voyage supprimé{% endif %}
+            </h2>
+            {% if reservation.voyage %}
+                <span class="badge badge-primary"><i class="fas fa-map-marker-alt"></i> {{ reservation.voyage.destination }}</span>
+            {% endif %}
+            <span class="badge badge-{{ reservation.statutBadgeClass }}" style="font-size:0.85rem;">{{ reservation.statutLabel }}</span>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size:2.5rem;font-weight:900;color:var(--accent);">{{ reservation.montantTotal|number_format(2, ',', ' ') }}</div>
+            <div style="font-size:0.9rem;color:var(--text-muted);">TND Total</div>
+        </div>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-users"></i> Nombre de personnes</div>
+            <div class="value" style="font-size:1.2rem;">{{ reservation.nbrPersonnes }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-tag"></i> Prix unitaire</div>
+            <div class="value">{{ reservation.voyage ? reservation.voyage.prixUnitaire|number_format(2, ',', ' ') ~ ' TND' : 'N/A' }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-calendar-alt"></i> Date de réservation</div>
+            <div class="value">{{ reservation.dateReservation ? reservation.dateReservation|date('d/m/Y H:i') : 'N/A' }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-calendar-plus"></i> Créée le</div>
+            <div class="value">{{ reservation.dateCreation ? reservation.dateCreation|date('d/m/Y H:i') : 'N/A' }}</div>
+        </div>
+        {% if reservation.voyage %}
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-plane-departure"></i> Départ</div>
+            <div class="value">{{ reservation.voyage.dateDepart ? reservation.voyage.dateDepart|date('d/m/Y') : '-' }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-plane-arrival"></i> Retour</div>
+            <div class="value">{{ reservation.voyage.dateRetour ? reservation.voyage.dateRetour|date('d/m/Y') : '-' }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    {# ── Countdown timer for EN_ATTENTE reservations ── #}
+    {% if reservation.statut == 'EN_ATTENTE' and reservation.dateCreation %}
+        <div class="expiration-timer"
+             data-created="{{ reservation.dateCreation|date('c') }}"
+             data-expire-minutes="30"
+             style="margin-top:24px;padding:16px 20px;border-radius:12px;
+                    background:linear-gradient(135deg,#fff3e0,#ffe0b2);
+                    border:2px solid #f57c00;
+                    display:flex;align-items:center;gap:14px;">
+            <div style="width:50px;height:50px;border-radius:50%;background:#e65100;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas fa-hourglass-half" style="color:white;font-size:1.3rem;"></i>
+            </div>
+            <div>
+                <div style="font-weight:700;color:#e65100;font-size:1rem;margin-bottom:4px;">
+                    ⏳ Expiration automatique dans :
+                    <span class="countdown-display" style="font-weight:900;color:#bf360c;font-size:1.4rem;margin-left:6px;"></span>
+                </div>
+                <div style="color:#795548;font-size:0.82rem;line-height:1.4;">
+                    Cette réservation sera <strong>automatiquement annulée</strong> si elle n'est pas confirmée dans les 30 minutes suivant sa création.
+                    Les places seront alors remises en vente.
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {# ── Action Buttons ── #}
+    <div style="margin-top:32px;padding-top:24px;border-top:2px solid #f1f5f9;display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;">
+        <a href="{{ path('client_reservation_qrcode', {id: reservation.id}) }}" class="btn btn-sm" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);color:white;border:none;">
+            <i class="fas fa-qrcode"></i> QR Code
+        </a>
+        <a href="{{ path('client_reservation_invoice', {id: reservation.id}) }}" class="btn btn-sm" style="background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;border:none;" target="_blank">
+            <i class="fas fa-file-pdf"></i> Télécharger Facture
+        </a>
+        {% if reservation.statut == 'EN_ATTENTE' %}
+            <form method="post" action="{{ path('client_reservation_cancel', {id: reservation.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')">
+                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ reservation.id) }}">
+                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Annuler</button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+{# ── JavaScript: Live countdown timer ── #}
+{% if reservation.statut == 'EN_ATTENTE' %}
+<script>
+(function() {
+    function updateTimer() {
+        const el = document.querySelector('.expiration-timer');
+        if (!el) return;
+
+        const created = new Date(el.dataset.created);
+        const expireMs = (parseInt(el.dataset.expireMinutes) || 30) * 60 * 1000;
+        const expireAt = new Date(created.getTime() + expireMs);
+        const now = new Date();
+        const remaining = expireAt - now;
+        const display = el.querySelector('.countdown-display');
+
+        if (remaining <= 0) {
+            display.textContent = 'EXPIRÉE — Veuillez actualiser la page';
+            el.style.background = 'linear-gradient(135deg,#ffebee,#ffcdd2)';
+            el.style.borderColor = '#c62828';
+            display.style.color = '#c62828';
+            return;
+        }
+
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        display.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+
+        if (mins < 5) {
+            el.style.background = 'linear-gradient(135deg,#ffebee,#ffcdd2)';
+            el.style.borderColor = '#c62828';
+            display.style.color = '#c62828';
+            display.style.animation = 'pulse 1s infinite';
+        } else if (mins < 15) {
+            el.style.background = 'linear-gradient(135deg,#fff8e1,#ffecb3)';
+            el.style.borderColor = '#f9a825';
+        }
+    }
+
+    updateTimer();
+    setInterval(updateTimer, 1000);
+})();
+</script>
+<style>
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+</style>
+{% endif %}
+{% endblock %}
