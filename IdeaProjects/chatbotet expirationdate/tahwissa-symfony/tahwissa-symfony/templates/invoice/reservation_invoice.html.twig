@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Facture {{ invoiceNumber }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            color: #2d3436;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .invoice-wrapper {
+            padding: 40px;
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #e67e22;
+            padding-bottom: 20px;
+        }
+
+        .company-info h1 {
+            font-size: 28px;
+            color: #e67e22;
+            margin-bottom: 4px;
+        }
+
+        .company-info p {
+            color: #636e72;
+            font-size: 11px;
+        }
+
+        .invoice-meta {
+            text-align: right;
+        }
+
+        .invoice-meta h2 {
+            font-size: 22px;
+            color: #2d3436;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .invoice-meta table td {
+            padding: 2px 0;
+            font-size: 11px;
+        }
+
+        .invoice-meta table td:first-child {
+            color: #636e72;
+            padding-right: 12px;
+        }
+
+        /* ── Status Badge ── */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            margin-top: 6px;
+        }
+
+        .status-CONFIRMEE { background: #27ae60; }
+        .status-EN_ATTENTE { background: #e67e22; }
+        .status-ANNULEE { background: #e74c3c; }
+        .status-TERMINEE { background: #2980b9; }
+
+        /* ── Voyage Details ── */
+        .voyage-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border-left: 4px solid #e67e22;
+        }
+
+        .voyage-section h3 {
+            font-size: 16px;
+            color: #e67e22;
+            margin-bottom: 12px;
+        }
+
+        .voyage-details {
+            width: 100%;
+        }
+
+        .voyage-details td {
+            padding: 6px 0;
+            vertical-align: top;
+        }
+
+        .voyage-details .label {
+            color: #636e72;
+            font-size: 11px;
+            width: 140px;
+        }
+
+        .voyage-details .value {
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* ── Pricing Table ── */
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+
+        .pricing-table thead th {
+            background: #2d3436;
+            color: white;
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .pricing-table thead th:last-child {
+            text-align: right;
+        }
+
+        .pricing-table tbody td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #dfe6e9;
+        }
+
+        .pricing-table tbody td:last-child {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .pricing-table tfoot td {
+            padding: 14px;
+            font-size: 14px;
+            font-weight: bold;
+            border-top: 3px solid #2d3436;
+        }
+
+        .pricing-table tfoot td:last-child {
+            text-align: right;
+            color: #e67e22;
+            font-size: 18px;
+        }
+
+        /* ── QR Code ── */
+        .qr-section {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #dfe6e9;
+        }
+
+        .qr-section img {
+            width: 150px;
+            height: 150px;
+        }
+
+        .qr-section p {
+            color: #636e72;
+            font-size: 10px;
+            margin-top: 8px;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            margin-top: 40px;
+            padding-top: 16px;
+            border-top: 1px solid #dfe6e9;
+            text-align: center;
+            color: #b2bec3;
+            font-size: 10px;
+        }
+
+        .footer p {
+            margin-bottom: 4px;
+        }
+
+        /* ── Watermark for unpaid ── */
+        .watermark {
+            position: fixed;
+            top: 40%;
+            left: 10%;
+            font-size: 80px;
+            color: rgba(231, 76, 60, 0.08);
+            transform: rotate(-30deg);
+            font-weight: 900;
+            letter-spacing: 10px;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    {% if reservation.statut == 'EN_ATTENTE' %}
+        <div class="watermark">NON PAYÉE</div>
+    {% endif %}
+    {% if reservation.statut == 'ANNULEE' %}
+        <div class="watermark">ANNULÉE</div>
+    {% endif %}
+
+    <div class="invoice-wrapper">
+        <!-- Header -->
+        <table style="width:100%;margin-bottom:30px;border-bottom:3px solid #e67e22;padding-bottom:20px;">
+            <tr>
+                <td style="vertical-align:top;">
+                    <h1 style="font-size:28px;color:#e67e22;margin-bottom:4px;">🌍 Tahwissa</h1>
+                    <p style="color:#636e72;font-size:11px;">Agence de Voyages & Tourisme</p>
+                    <p style="color:#636e72;font-size:10px;">Tunisie — contact@tahwissa.tn</p>
+                </td>
+                <td style="text-align:right;vertical-align:top;">
+                    <h2 style="font-size:22px;color:#2d3436;margin-bottom:8px;text-transform:uppercase;letter-spacing:2px;">FACTURE</h2>
+                    <table style="margin-left:auto;">
+                        <tr>
+                            <td style="color:#636e72;padding-right:12px;font-size:11px;">N° Facture</td>
+                            <td style="font-weight:bold;font-size:11px;">{{ invoiceNumber }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#636e72;padding-right:12px;font-size:11px;">Date</td>
+                            <td style="font-weight:bold;font-size:11px;">{{ invoiceDate|date('d/m/Y') }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#636e72;padding-right:12px;font-size:11px;">Réf. Réservation</td>
+                            <td style="font-weight:bold;font-size:11px;">#{{ reservation.id }}</td>
+                        </tr>
+                    </table>
+                    <div style="margin-top:8px;">
+                        <span class="status-badge status-{{ reservation.statut }}">{{ reservation.statutLabel }}</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Voyage Details -->
+        {% if reservation.voyage %}
+        <div class="voyage-section">
+            <h3>✈️ Détails du Voyage</h3>
+            <table class="voyage-details">
+                <tr>
+                    <td class="label">Titre du voyage</td>
+                    <td class="value">{{ reservation.voyage.titre }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Destination</td>
+                    <td class="value">📍 {{ reservation.voyage.destination }}</td>
+                </tr>
+                {% if reservation.voyage.categorie %}
+                <tr>
+                    <td class="label">Catégorie</td>
+                    <td class="value">{{ reservation.voyage.categorie }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td class="label">Date de départ</td>
+                    <td class="value">{{ reservation.voyage.dateDepart ? reservation.voyage.dateDepart|date('d/m/Y') : 'N/A' }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Date de retour</td>
+                    <td class="value">{{ reservation.voyage.dateRetour ? reservation.voyage.dateRetour|date('d/m/Y') : 'N/A' }}</td>
+                </tr>
+                {% if reservation.voyage.dateDepart and reservation.voyage.dateRetour %}
+                <tr>
+                    <td class="label">Durée</td>
+                    <td class="value">{{ reservation.voyage.dateRetour.diff(reservation.voyage.dateDepart).days }} jour(s)</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- Pricing Table -->
+        <table class="pricing-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Qté</th>
+                    <th>Prix unitaire</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        {% if reservation.voyage %}
+                            {{ reservation.voyage.titre }} — {{ reservation.voyage.destination }}
+                        {% else %}
+                            Réservation de voyage
+                        {% endif %}
+                    </td>
+                    <td>{{ reservation.nbrPersonnes }} pers.</td>
+                    <td>{{ reservation.voyage ? reservation.voyage.prixUnitaire|number_format(2, ',', ' ') ~ ' TND' : 'N/A' }}</td>
+                    <td>{{ reservation.montantTotal|number_format(2, ',', ' ') }} TND</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3">TOTAL À PAYER</td>
+                    <td>{{ reservation.montantTotal|number_format(2, ',', ' ') }} TND</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- Reservation Info -->
+        <table style="width:100%;margin-bottom:20px;font-size:11px;">
+            <tr>
+                <td style="color:#636e72;">Date de réservation :</td>
+                <td style="font-weight:bold;">{{ reservation.dateReservation ? reservation.dateReservation|date('d/m/Y H:i') : 'N/A' }}</td>
+                <td style="color:#636e72;">Créée le :</td>
+                <td style="font-weight:bold;">{{ reservation.dateCreation ? reservation.dateCreation|date('d/m/Y H:i') : 'N/A' }}</td>
+            </tr>
+        </table>
+
+        <!-- QR Code -->
+        <div class="qr-section">
+            <img src="{{ qrCode }}" alt="QR Code Réservation">
+            <p>Scannez ce QR code pour vérifier votre réservation</p>
+            <p style="font-weight:bold;color:#2d3436;">Réf: TAHWISSA-RES-{{ reservation.id }}</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>🌍 <strong>Tahwissa</strong> — Votre partenaire voyage de confiance</p>
+            <p>Ce document a été généré automatiquement le {{ invoiceDate|date('d/m/Y à H:i') }}</p>
+            <p>Pour toute question, contactez-nous à contact@tahwissa.tn</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,42 @@
+{% extends 'client/layout.html.twig' %}
+
+{% block title %}Réserver un Transport{% endblock %}
+
+{% block content %}
+<div class="top-bar" style="margin-bottom: 24px;">
+    <div>
+        <h1><i class="fas fa-ticket-alt" style="color:var(--accent);margin-right:10px;"></i>Réserver un Transport</h1>
+        <p style="color:var(--text-muted);font-size:0.9rem;">Préparez votre voyage en quelques clics</p>
+    </div>
+    <div class="top-bar-right">
+        <a href="{{ path('client_transport_index') }}" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left"></i> Retour aux Transports</a>
+    </div>
+</div>
+
+<div class="form-card" style="max-width: 600px; margin: 0 auto;">
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        <div class="form-group {{ form_errors(form.transport)|length > 0 ? 'has-error' : '' }}">
+            <label style="font-weight:600; color:var(--text-dark);">Itinéraire Sélectionné</label>
+            {{ form_widget(form.transport) }}
+            <div class="form-error">{{ form_errors(form.transport) }}</div>
+        </div>
+
+        <div class="form-row" style="margin-top:20px;">
+            <div class="form-group {{ form_errors(form.dateReservation)|length > 0 ? 'has-error' : '' }}">
+                <label style="font-weight:600; color:var(--text-dark);">Date de Réservation</label>
+                {{ form_widget(form.dateReservation) }}
+                <div class="form-error">{{ form_errors(form.dateReservation) }}</div>
+            </div>
+            <div class="form-group {{ form_errors(form.nbPlacesReservees)|length > 0 ? 'has-error' : '' }}">
+                <label style="font-weight:600; color:var(--text-dark);">Nombre de Voyageurs</label>
+                {{ form_widget(form.nbPlacesReservees) }}
+                <div class="form-error">{{ form_errors(form.nbPlacesReservees) }}</div>
+            </div>
+        </div>
+
+        <div class="form-actions" style="margin-top: 24px; border-top:1px solid #f1f5f9; padding-top:20px;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; font-size:1.05rem;"><i class="fas fa-check"></i> Confirmer la réservation</button>
+        </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Modifier Transport{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <div>
+        <h1><i class="fas fa-bus" style="color:var(--secondary);margin-right:10px;"></i>Modifier le transport</h1>
+        <p style="color:var(--text-muted);font-size:0.9rem;">Mise à jour des informations de {{ transport.typeTransport }} vers {{ transport.villeArrivee }}</p>
+    </div>
+    <div class="top-bar-right">
+        <a href="{{ path('admin_transport_index') }}" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left"></i> Retour</a>
+    </div>
+</div>
+
+<div class="form-card">
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        <div class="form-row">
+            <div class="form-group {{ form_errors(form.typeTransport)|length > 0 ? 'has-error' : '' }}">
+                {{ form_label(form.typeTransport) }}
+                {{ form_widget(form.typeTransport) }}
+                {{ form_errors(form.typeTransport) }}
+            </div>
+            <div class="form-group {{ form_errors(form.nbPlaces)|length > 0 ? 'has-error' : '' }}">
+                {{ form_label(form.nbPlaces) }}
+                {{ form_widget(form.nbPlaces) }}
+                {{ form_errors(form.nbPlaces) }}
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group {{ form_errors(form.villeDepart)|length > 0 ? 'has-error' : '' }}">
+                {{ form_label(form.villeDepart) }}
+                {{ form_widget(form.villeDepart) }}
+                {{ form_errors(form.villeDepart) }}
+            </div>
+            <div class="form-group {{ form_errors(form.villeArrivee)|length > 0 ? 'has-error' : '' }}">
+                {{ form_label(form.villeArrivee) }}
+                {{ form_widget(form.villeArrivee) }}
+                {{ form_errors(form.villeArrivee) }}
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group {{ form_errors(form.dateDepart)|length > 0 ? 'has-error' : '' }}">
+                {{ form_label(form.dateDepart) }}
+                {{ form_widget(form.dateDepart) }}
+                {{ form_errors(form.dateDepart) }}
+            </div>
+            <div class="form-group {{ form_errors(form.heureDepart)|length > 0 ? 'has-error' : '' }}">
+                {{ form_label(form.heureDepart) }}
+                {{ form_widget(form.heureDepart) }}
+                {{ form_errors(form.heureDepart) }}
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group {{ form_errors(form.duree)|length > 0 ? 'has-error' : '' }}">
+                {{ form_label(form.duree) }}
+                {{ form_widget(form.duree) }}
+                {{ form_errors(form.duree) }}
+            </div>
+            <div class="form-group {{ form_errors(form.prix)|length > 0 ? 'has-error' : '' }}">
+                {{ form_label(form.prix) }}
+                {{ form_widget(form.prix) }}
+                {{ form_errors(form.prix) }}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer les modifications</button>
+        </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}
