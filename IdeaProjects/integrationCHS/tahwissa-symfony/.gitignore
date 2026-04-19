@@ -9,3 +9,10 @@
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+
+# Test/debug files with hardcoded credentials
+test_sms.php
+test_gemini.php
+test_weather.php
+list_models.php
+test_cookie.txt
