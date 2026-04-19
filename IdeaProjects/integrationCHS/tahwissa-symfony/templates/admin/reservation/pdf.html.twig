@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Réservation #{{ reservation.id }} - Tahwissa</title>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1a1a2e; background: #f0f4f8; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #1565C0, #7C4DFF); color: white; padding: 32px 40px; }
+        .header h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; }
+        .header p { opacity: 0.85; font-size: 0.95rem; }
+        .badge { display: inline-block; padding: 6px 16px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; margin-top: 10px; }
+        .badge-warning { background: #FFF3CD; color: #856404; }
+        .badge-success { background: #D4EDDA; color: #155724; }
+        .badge-danger { background: #F8D7DA; color: #721C24; }
+        .badge-info { background: #D1ECF1; color: #0C5460; }
+        .content { padding: 40px; }
+        .section { margin-bottom: 28px; }
+        .section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 16px; font-weight: 700; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .field-label { font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px; }
+        .field-value { font-size: 1rem; font-weight: 600; }
+        .total-box { background: linear-gradient(135deg, #FF6D00, #FF9100); color: white; padding: 24px 32px; border-radius: 12px; text-align: center; margin-top: 24px; }
+        .total-box .amount { font-size: 2.5rem; font-weight: 900; }
+        .total-box .label { font-size: 0.9rem; opacity: 0.9; }
+        .footer { text-align: center; padding: 20px; color: #94a3b8; font-size: 0.8rem; border-top: 1px solid #f1f5f9; }
+        .print-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; background: linear-gradient(135deg, #1565C0, #7C4DFF); color: white; border: none; border-radius: 50px; font-size: 0.95rem; font-weight: 600; cursor: pointer; text-decoration: none; margin: 20px auto; }
+        .print-btn:hover { opacity: 0.9; }
+        .actions { text-align: center; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="actions no-print">
+        <button onclick="window.print()" class="print-btn"><span>🖨️</span> Imprimer / Télécharger PDF</button>
+        <a href="{{ path('admin_reservation_index') }}" class="print-btn" style="background:linear-gradient(135deg, #64748b, #94a3b8);margin-left:10px;">← Retour aux réservations</a>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>✈️ Tahwissa - Confirmation de Réservation</h1>
+            <p>Réservation #{{ reservation.id }}</p>
+            <span class="badge badge-{{ reservation.statutBadgeClass }}">{{ reservation.statutLabel }}</span>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <div class="section-title">Informations du Voyage</div>
+                <div class="grid">
+                    <div>
+                        <div class="field-label">Voyage</div>
+                        <div class="field-value">{% if reservation.voyage %}{{ reservation.voyage.titre }}{% else %}Voyage supprimé{% endif %}</div>
+                    </div>
+                    <div>
+                        <div class="field-label">Destination</div>
+                        <div class="field-value">{% if reservation.voyage %}{{ reservation.voyage.destination }}{% else %}N/A{% endif %}</div>
+                    </div>
+                    {% if reservation.voyage %}
+                    <div>
+                        <div class="field-label">Date de départ</div>
+                        <div class="field-value">{{ reservation.voyage.dateDepart ? reservation.voyage.dateDepart|date('d/m/Y') : 'N/A' }}</div>
+                    </div>
+                    <div>
+                        <div class="field-label">Date de retour</div>
+                        <div class="field-value">{{ reservation.voyage.dateRetour ? reservation.voyage.dateRetour|date('d/m/Y') : 'N/A' }}</div>
+                    </div>
+                    <div>
+                        <div class="field-label">Prix unitaire</div>
+                        <div class="field-value">{{ reservation.voyage.prixUnitaire|number_format(2, ',', ' ') }} TND</div>
+                    </div>
+                    <div>
+                        <div class="field-label">Catégorie</div>
+                        <div class="field-value">{{ reservation.voyage.categorie ?? 'N/A' }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Détails de la Réservation</div>
+                <div class="grid">
+                    <div>
+                        <div class="field-label">Client</div>
+                        <div class="field-value">{{ usersById[reservation.idUtilisateur] is defined ? usersById[reservation.idUtilisateur].name : 'User #' ~ reservation.idUtilisateur }}</div>
+                    </div>
+                    <div>
+                        <div class="field-label">Nombre de personnes</div>
+                        <div class="field-value">{{ reservation.nbrPersonnes }}</div>
+                    </div>
+                    <div>
+                        <div class="field-label">Date de réservation</div>
+                        <div class="field-value">{{ reservation.dateReservation ? reservation.dateReservation|date('d/m/Y H:i') : 'N/A' }}</div>
+                    </div>
+                    <div>
+                        <div class="field-label">Date de création</div>
+                        <div class="field-value">{{ reservation.dateCreation ? reservation.dateCreation|date('d/m/Y H:i') : 'N/A' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="total-box">
+                <div class="label">Montant Total</div>
+                <div class="amount">{{ reservation.montantTotal|number_format(2, ',', ' ') }} TND</div>
+                <div class="label">{{ reservation.nbrPersonnes }} personne{{ reservation.nbrPersonnes > 1 ? 's' : '' }}</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Tahwissa &copy; {{ 'now'|date('Y') }} — Document généré le {{ 'now'|date('d/m/Y à H:i') }}
+        </div>
+    </div>
+</body>
+</html>

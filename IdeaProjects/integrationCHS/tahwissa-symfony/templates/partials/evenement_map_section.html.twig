@@ -1,0 +1,43 @@
+{# Carte OpenStreetMap (Leaflet). Inclure evenement_map_leaflet_css.html.twig dans block stylesheets et evenement_map_leaflet_js.html.twig dans block javascripts si hasMapCoordinates. #}
+<style>
+.event-map-section { margin-top: 28px; padding-top: 24px; border-top: 2px solid #f1f5f9; }
+body.dark .event-map-section { border-top-color: #334155; }
+.event-map-section .event-map-heading { font-size: 1.15rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: inherit; }
+.event-map-wrap { border-radius: var(--radius-sm); overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
+body.dark .event-map-wrap { border-color: #334155; box-shadow: 0 4px 24px rgba(0,0,0,0.35); }
+.event-detail-map { height: min(420px, 55vh); width: 100%; min-height: 280px; z-index: 1; }
+.event-map-credits { font-size: 0.78rem; color: var(--text-muted); margin-top: 10px; line-height: 1.5; }
+.event-map-credits a { color: var(--primary); }
+.event-map-fallback { padding: 20px; background: #f8fafc; border-radius: var(--radius-sm); border: 1px dashed #cbd5e1; color: #64748b; }
+body.dark .event-map-fallback { background: #0f172a; border-color: #475569; color: #94a3b8; }
+</style>
+<section class="event-map-section" aria-labelledby="event-map-heading">
+    <h3 id="event-map-heading" class="event-map-heading">
+        <i class="fas fa-map-marked-alt" style="color:var(--accent);" aria-hidden="true"></i>
+        Localisation
+    </h3>
+    {% if evenement.hasMapCoordinates %}
+    <div class="event-map-wrap">
+        <div id="event-detail-map" class="event-detail-map" role="region" aria-label="Carte du lieu de l'événement"
+            data-lat="{{ evenement.latitude }}"
+            data-lng="{{ evenement.longitude }}"
+            data-title="{{ evenement.titre|e('html_attr') }}"
+            data-label="{{ (evenement.locationDisplayName ?? evenement.lieu)|e('html_attr') }}">
+        </div>
+    </div>
+    <p class="event-map-credits">
+        Carte © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>
+        — position estimée à partir de l’adresse « {{ evenement.lieu }} ».
+    </p>
+    {% else %}
+    <div class="event-map-fallback">
+        <p style="margin:0 0 8px 0;font-weight:600;"><i class="fas fa-info-circle" style="color:var(--accent);"></i> Carte indisponible</p>
+        <p style="margin:0;font-size:0.9rem;">L’adresse n’a pas pu être localisée automatiquement. Lieu indiqué : <strong>{{ evenement.lieu }}</strong>.</p>
+        <p style="margin:12px 0 0 0;">
+            <a href="https://www.openstreetmap.org/search?query={{ evenement.lieu|url_encode }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:6px;">
+                <i class="fas fa-external-link-alt"></i> Rechercher sur OpenStreetMap
+            </a>
+        </p>
+    </div>
+    {% endif %}
+</section>

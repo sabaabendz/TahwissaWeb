@@ -1,0 +1,98 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Admin - {{ evenement.titre }}{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+{% if evenement.hasMapCoordinates %}
+{% include 'partials/evenement_map_leaflet_css.html.twig' %}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <div>
+        <h1><i class="fas fa-calendar-alt" style="color:var(--primary);margin-right:10px;"></i>Détail Événement #{{ evenement.id }}</h1>
+    </div>
+    <div class="top-bar-right">
+        <a href="{{ path('admin_evenement_edit', {id: evenement.id}) }}" class="btn btn-primary btn-sm"><i class="fas fa-pen"></i> Modifier</a>
+        <a href="{{ path('admin_evenement_index') }}" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left"></i> Retour</a>
+    </div>
+</div>
+
+<div class="detail-card">
+    <div class="detail-header">
+        <div>
+            <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:8px;">{{ evenement.titre }}</h2>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span class="badge badge-primary"><i class="fas fa-map-marker-alt"></i> {{ evenement.lieu }}</span>
+                <span class="badge badge-purple">{{ evenement.categorie ?? 'Non classé' }}</span>
+                <span class="badge badge-{{ evenement.statutBadgeClass }}">{{ evenement.statutLabel }}</span>
+            </div>
+        </div>
+        {% include 'partials/evenement_prix_display.html.twig' with { evenement: evenement, variant: 'hero', fontSize: '2rem', sublabel: 'par place' } %}
+    </div>
+
+    {% if evenement.description %}
+    <div style="margin-bottom:24px;padding:16px;background:#f8fafc;border-radius:var(--radius-sm);color:#475569;font-size:0.92rem;line-height:1.7;">
+        {{ evenement.description }}
+    </div>
+    {% endif %}
+
+    <div class="detail-grid">
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-calendar-day"></i> Date de l'événement</div>
+            <div class="value">{{ evenement.dateEvent ? evenement.dateEvent|date('d/m/Y') : 'Non définie' }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-clock"></i> Heure</div>
+            <div class="value">{{ evenement.heureEvent ? evenement.heureEvent|date('H:i') : 'Non définie' }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-chair"></i> Places disponibles</div>
+            <div class="value">
+                <span class="badge {{ evenement.nbPlaces > 10 ? 'badge-success' : (evenement.nbPlaces > 0 ? 'badge-warning' : 'badge-danger') }}" style="font-size:0.9rem;">
+                    {{ evenement.nbPlaces }} places
+                </span>
+            </div>
+        </div>
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-tag"></i> Catégorie</div>
+            <div class="value">{{ evenement.categorie ?? 'Non définie' }}</div>
+        </div>
+        {% if evenement.hasPromo %}
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-percent"></i> Promotion</div>
+            <div class="value"><span class="badge badge-success">-{{ evenement.promoPercent }}%</span> (prix de base {{ evenement.prix|number_format(2, ',', ' ') }} TND)</div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% include 'partials/evenement_map_section.html.twig' %}
+
+    {% if evenement.reservations|length > 0 %}
+    <div style="margin-top:32px;padding-top:24px;border-top:2px solid #f1f5f9;">
+        <h3 style="margin-bottom:16px;font-size:1.1rem;"><i class="fas fa-calendar-check" style="color:var(--accent);"></i> Réservations ({{ evenement.reservations|length }})</h3>
+        <table class="data-table">
+            <thead><tr><th>#</th><th>Utilisateur</th><th>Places</th><th>Date Rés.</th><th>Statut</th></tr></thead>
+            <tbody>
+                {% for res in evenement.reservations %}
+                <tr>
+                    <td>#{{ res.id }}</td>
+                    <td>{{ usersById[res.idUser] is defined ? usersById[res.idUser].name : 'User #' ~ res.idUser }}</td>
+                    <td>{{ res.nbPlacesReservees }}</td>
+                    <td>{{ res.dateReservation ? res.dateReservation|date('d/m/Y') : '-' }}</td>
+                    <td><span class="badge badge-{{ res.statutBadgeClass }}">{{ res.statutLabel }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{% if evenement.hasMapCoordinates %}
+{% include 'partials/evenement_map_leaflet_js.html.twig' %}
+{% endif %}
+{% endblock %}

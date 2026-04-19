@@ -1,0 +1,69 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Admin - Réclamations{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <div>
+        <h1><i class="fas fa-flag" style="color:var(--danger);margin-right:10px;"></i>Réclamations</h1>
+        <p style="color:var(--text-muted);font-size:0.9rem;">Gérer toutes les réclamations des clients</p>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <a href="{{ path('admin_reclamation_index') }}" class="filter-btn {{ currentStatut == '' ? 'active' : '' }}">Toutes</a>
+    <a href="{{ path('admin_reclamation_index', {statut: 'EN_ATTENTE'}) }}" class="filter-btn {{ currentStatut == 'EN_ATTENTE' ? 'active' : '' }}">🕐 En attente</a>
+    <a href="{{ path('admin_reclamation_index', {statut: 'EN_COURS'}) }}" class="filter-btn {{ currentStatut == 'EN_COURS' ? 'active' : '' }}">🔄 En cours</a>
+    <a href="{{ path('admin_reclamation_index', {statut: 'TRAITEE'}) }}" class="filter-btn {{ currentStatut == 'TRAITEE' ? 'active' : '' }}">✅ Traitées</a>
+    <a href="{{ path('admin_reclamation_index', {statut: 'REJETEE'}) }}" class="filter-btn {{ currentStatut == 'REJETEE' ? 'active' : '' }}">❌ Rejetées</a>
+</div>
+
+<div class="dashboard-card">
+    {% if reclamations is empty %}
+        <div class="empty-state">
+            <i class="fas fa-flag"></i>
+            <h3>Aucune réclamation trouvée</h3>
+            <p>Aucune réclamation ne correspond à ce filtre.</p>
+        </div>
+    {% else %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Titre</th>
+                    <th>Type</th>
+                    <th>Utilisateur</th>
+                    <th>Date</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rec in reclamations %}
+                <tr>
+                    <td style="font-weight:600;color:var(--text-muted);">#{{ rec.id }}</td>
+                    <td style="font-weight:600;">{{ rec.titre }}</td>
+                    <td><span class="badge badge-info">{{ rec.type ?? 'N/A' }}</span></td>
+                    <td>{{ usersById[rec.idUser] is defined ? usersById[rec.idUser].nom : 'User #' ~ rec.idUser }}</td>
+                    <td style="font-size:0.82rem;">{{ rec.dateCreation ? rec.dateCreation|date('d/m/Y H:i') : '-' }}</td>
+                    <td><span class="badge badge-{{ rec.statutBadgeClass }}">{{ rec.statutLabel }}</span></td>
+                    <td>
+                        <a href="{{ path('admin_reclamation_show', {id: rec.id}) }}" class="action-btn view" title="Voir"><i class="fas fa-eye"></i></a>
+                        <a href="{{ path('admin_reclamation_edit', {id: rec.id}) }}" class="action-btn edit" title="Modifier"><i class="fas fa-pen"></i></a>
+                        {% if rec.statut == 'EN_ATTENTE' %}
+                            <a href="{{ path('admin_reclamation_status', {id: rec.id, statut: 'EN_COURS'}) }}" class="action-btn confirm" title="Prendre en charge"><i class="fas fa-play"></i></a>
+                        {% endif %}
+                        {% if rec.statut == 'EN_COURS' %}
+                            <a href="{{ path('admin_reclamation_status', {id: rec.id, statut: 'TRAITEE'}) }}" class="action-btn confirm" title="Marquer traitée"><i class="fas fa-check"></i></a>
+                        {% endif %}
+                        <form method="post" action="{{ path('admin_reclamation_delete', {id: rec.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer cette réclamation ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ rec.id) }}">
+                            <button type="submit" class="action-btn delete" title="Supprimer"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+{% endblock %}
