@@ -1,0 +1,196 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Admin - Statistiques{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <div>
+        <h1><i class="fas fa-chart-line" style="color:var(--accent);margin-right:10px;"></i>Tableau de Bord & Statistiques</h1>
+        <p style="color:var(--text-muted);font-size:0.9rem;">Vue d'ensemble de votre activité</p>
+    </div>
+</div>
+
+{# KPI Cards #}
+<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div class="stat-card blue">
+        <div class="stat-icon"><i class="fas fa-plane"></i></div>
+        <div class="stat-info"><h3>{{ voyageStats.total }}</h3><p>Voyages</p></div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
+        <div class="stat-info"><h3>{{ reservationStats.total }}</h3><p>Réservations</p></div>
+    </div>
+    <div class="stat-card orange">
+        <div class="stat-icon"><i class="fas fa-coins"></i></div>
+        <div class="stat-info"><h3>{{ reservationStats.revenu|number_format(0, ',', ' ') }} TND</h3><p>Revenu confirmé</p></div>
+    </div>
+    <div class="stat-card purple">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-info"><h3>{{ totalUsers }}</h3><p>Utilisateurs</p></div>
+    </div>
+</div>
+
+{# Second row: more stats #}
+<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:32px;">
+    <div class="stat-card green">
+        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-info"><h3>{{ reservationStats.confirmees }}</h3><p>Confirmées</p></div>
+    </div>
+    <div class="stat-card orange">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-info"><h3>{{ reservationStats.enAttente }}</h3><p>En attente</p></div>
+    </div>
+    <div class="stat-card red">
+        <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+        <div class="stat-info"><h3>{{ reservationStats.annulees }}</h3><p>Annulées</p></div>
+    </div>
+    <div class="stat-card blue">
+        <div class="stat-icon"><i class="fas fa-calendar-star"></i></div>
+        <div class="stat-info"><h3>{{ totalEvenements }}</h3><p>Événements</p></div>
+    </div>
+</div>
+
+{# Charts Row #}
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-bottom:32px;">
+    {# Monthly Reservations Chart #}
+    <div class="dashboard-card">
+        <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;"><i class="fas fa-chart-bar" style="color:var(--primary);margin-right:8px;"></i>Réservations Mensuelles</h3>
+        <canvas id="monthlyChart" height="280"></canvas>
+    </div>
+
+    {# Status Pie Chart #}
+    <div class="dashboard-card">
+        <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;"><i class="fas fa-chart-pie" style="color:var(--secondary);margin-right:8px;"></i>Réservations par Statut</h3>
+        <canvas id="statusChart" height="280"></canvas>
+    </div>
+</div>
+
+{# Revenue Chart + Top Destinations #}
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;">
+    {# Revenue Chart #}
+    <div class="dashboard-card">
+        <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;"><i class="fas fa-money-bill-wave" style="color:var(--success);margin-right:8px;"></i>Revenu Mensuel (TND)</h3>
+        <canvas id="revenueChart" height="280"></canvas>
+    </div>
+
+    {# Top Destinations #}
+    <div class="dashboard-card">
+        <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:20px;"><i class="fas fa-trophy" style="color:var(--accent);margin-right:8px;"></i>Top Destinations</h3>
+        {% if topDestinations is empty %}
+            <p style="color:var(--text-muted);text-align:center;padding:40px;">Aucune donnée</p>
+        {% else %}
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                {% for dest in topDestinations %}
+                <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f8fafc;border-radius:var(--radius-sm);">
+                    <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:0.85rem;">{{ loop.index }}</div>
+                    <div style="flex:1;">
+                        <div style="font-weight:700;font-size:0.95rem;">{{ dest.destination }}</div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);">{{ dest.total }} réservation{{ dest.total > 1 ? 's' : '' }}</div>
+                    </div>
+                    <div style="font-weight:700;color:var(--accent);">{{ dest.revenu|number_format(0, ',', ' ') }} TND</div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+<script>
+    const monthLabels = {{ monthlyData|map(d => d.mois)|json_encode|raw }};
+    const monthTotals = {{ monthlyData|map(d => d.total)|json_encode|raw }};
+    const monthRevenu = {{ monthlyData|map(d => d.revenu)|json_encode|raw }};
+
+    // Monthly reservations bar chart
+    new Chart(document.getElementById('monthlyChart'), {
+        type: 'bar',
+        data: {
+            labels: monthLabels,
+            datasets: [{
+                label: 'Réservations',
+                data: monthTotals,
+                backgroundColor: 'rgba(21,101,192,0.7)',
+                borderRadius: 8,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Status pie chart
+    const statusLabels = {{ statusData|map(d => d.statut)|json_encode|raw }};
+    const statusTotals = {{ statusData|map(d => d.total)|json_encode|raw }};
+    const statusColors = statusLabels.map(s => {
+        switch(s) {
+            case 'EN_ATTENTE': return '#F9A825';
+            case 'CONFIRMEE': return '#00C853';
+            case 'ANNULEE': return '#FF1744';
+            case 'TERMINEE': return '#00B0FF';
+            default: return '#94a3b8';
+        }
+    });
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: statusLabels.map(s => {
+                switch(s) {
+                    case 'EN_ATTENTE': return 'En attente';
+                    case 'CONFIRMEE': return 'Confirmée';
+                    case 'ANNULEE': return 'Annulée';
+                    case 'TERMINEE': return 'Terminée';
+                    default: return s;
+                }
+            }),
+            datasets: [{
+                data: statusTotals,
+                backgroundColor: statusColors,
+                borderWidth: 0,
+                spacing: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 16, font: { size: 12 } } }
+            }
+        }
+    });
+
+    // Revenue line chart
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'line',
+        data: {
+            labels: monthLabels,
+            datasets: [{
+                label: 'Revenu (TND)',
+                data: monthRevenu,
+                borderColor: '#00C853',
+                backgroundColor: 'rgba(0,200,83,0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: '#00C853',
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+</script>
+{% endblock %}
