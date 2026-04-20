@@ -1,0 +1,53 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Nouvelle Destination{% endblock %}
+
+{% block content %}
+    <div class="top-bar">
+        <h1><i class="fas fa-plus-circle"></i> Ajouter une destination</h1>
+        <a href="{{ path('admin_destination_index') }}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="form-card">
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        
+        <div class="form-row">
+            <div class="form-group {% if form.nom.vars.errors|length > 0 %}has-error{% endif %}">
+                {{ form_label(form.nom, "Nom de la destination *") }}
+                {{ form_widget(form.nom) }}
+                {{ form_errors(form.nom) }}
+            </div>
+            <div class="form-group {% if form.pays.vars.errors|length > 0 %}has-error{% endif %}">
+                {{ form_label(form.pays, "Pays *") }}
+                {{ form_widget(form.pays) }}
+                {{ form_errors(form.pays) }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.ville, "Ville") }}
+            {{ form_widget(form.ville) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.description, "Description") }}
+            {{ form_widget(form.description) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.imageUrl, "URL Image") }}
+            {{ form_widget(form.imageUrl) }}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Enregistrer
+            </button>
+            <a href="{{ path('admin_destination_index') }}" class="btn btn-outline">Annuler</a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

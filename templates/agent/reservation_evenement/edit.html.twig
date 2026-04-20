@@ -1,0 +1,53 @@
+{% extends 'agent/layout.html.twig' %}
+{% block title %}Agent - Modifier Réservation{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <div>
+        <h1><i class="fas fa-pen" style="color:var(--primary);margin-right:10px;"></i>Modifier la Réservation</h1>
+        <p style="color:var(--text-muted);font-size:0.9rem;">Réservation #{{ reservation.id }}</p>
+    </div>
+    <div class="top-bar-right">
+        <a href="{{ path('agent_reservation_evenement_show', {id: reservation.id}) }}" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i> Voir</a>
+        <a href="{{ path('agent_reservation_evenement_index') }}" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left"></i> Retour</a>
+    </div>
+</div>
+
+<div class="form-card">
+    <h2><i class="fas fa-calendar-check" style="color:var(--primary);"></i> Modifier la Réservation</h2>
+    <p class="subtitle">Modifiez les informations ci-dessous.</p>
+
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+    <div class="form-group {{ form.evenement.vars.errors|length > 0 ? 'has-error' : '' }}">
+        {{ form_label(form.evenement) }}
+        {{ form_widget(form.evenement) }}
+        {% for error in form.evenement.vars.errors %}<div class="form-error">{{ error.message }}</div>{% endfor %}
+    </div>
+
+    <div class="form-row">
+        <div class="form-group {{ form.dateReservation.vars.errors|length > 0 ? 'has-error' : '' }}">
+            {{ form_label(form.dateReservation) }}
+            {{ form_widget(form.dateReservation) }}
+            {% for error in form.dateReservation.vars.errors %}<div class="form-error">{{ error.message }}</div>{% endfor %}
+        </div>
+        <div class="form-group {{ form.nbPlacesReservees.vars.errors|length > 0 ? 'has-error' : '' }}">
+            {{ form_label(form.nbPlacesReservees) }}
+            {{ form_widget(form.nbPlacesReservees) }}
+            {% for error in form.nbPlacesReservees.vars.errors %}<div class="form-error">{{ error.message }}</div>{% endfor %}
+        </div>
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.statut) }}
+        {{ form_widget(form.statut) }}
+    </div>
+
+    <div class="form-actions">
+        <a href="{{ path('agent_reservation_evenement_index') }}" class="btn btn-outline btn-sm">Annuler</a>
+        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Enregistrer</button>
+    </div>
+
+    {{ form_end(form) }}
+</div>
+{% endblock %}

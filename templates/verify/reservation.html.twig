@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification — Réservation #{{ reservation.id }} | Tahwissa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+
+        .verify-card {
+            background: white; border-radius: 24px; overflow: hidden;
+            max-width: 480px; width: 100%;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            animation: fadeIn 0.6s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .verify-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 32px 28px; text-align: center; color: white;
+        }
+        .verify-header .logo {
+            font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900;
+            margin-bottom: 6px;
+        }
+        .verify-header .subtitle { opacity: 0.85; font-size: 0.85rem; }
+
+        .verify-status {
+            text-align: center; padding: 20px 28px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .status-icon {
+            width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
+        }
+        .status-CONFIRMEE .status-icon { background: #d4edda; }
+        .status-EN_ATTENTE .status-icon { background: #fff3cd; }
+        .status-ANNULEE .status-icon { background: #f8d7da; }
+        .status-TERMINEE .status-icon { background: #d1ecf1; }
+
+        .status-label {
+            font-weight: 800; font-size: 1.1rem; margin-bottom: 4px;
+        }
+        .status-CONFIRMEE .status-label { color: #155724; }
+        .status-EN_ATTENTE .status-label { color: #856404; }
+        .status-ANNULEE .status-label { color: #721c24; }
+        .status-TERMINEE .status-label { color: #0c5460; }
+
+        .verify-body { padding: 24px 28px; }
+
+        .info-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid #f8fafc;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row .label {
+            color: #94a3b8; font-size: 0.82rem; font-weight: 500;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .info-row .label i { width: 16px; text-align: center; color: #667eea; }
+        .info-row .value { font-weight: 700; color: #1e293b; font-size: 0.9rem; }
+
+        .total-row {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            margin: 16px -28px 0; padding: 20px 28px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .total-row .label { font-weight: 600; color: #475569; font-size: 0.9rem; }
+        .total-row .value {
+            font-family: 'Playfair Display', serif; font-weight: 900;
+            font-size: 1.6rem; color: #667eea;
+        }
+
+        .verify-footer {
+            text-align: center; padding: 16px 28px; background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+        .verify-footer p {
+            color: #94a3b8; font-size: 0.72rem; line-height: 1.5;
+        }
+        .verify-footer .ref {
+            font-weight: 700; color: #667eea; font-size: 0.8rem; margin-bottom: 6px;
+        }
+
+        .badge-verified {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #d4edda; color: #155724;
+            padding: 4px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="verify-card">
+        <div class="verify-header">
+            <div class="logo">🌍 Tahwissa</div>
+            <div class="subtitle">Vérification de réservation</div>
+        </div>
+
+        <div class="verify-status status-{{ reservation.statut }}">
+            <div class="status-icon">
+                {% if reservation.statut == 'CONFIRMEE' %}✅
+                {% elseif reservation.statut == 'EN_ATTENTE' %}⏳
+                {% elseif reservation.statut == 'ANNULEE' %}❌
+                {% else %}🏁{% endif %}
+            </div>
+            <div class="status-label">{{ reservation.statutLabel }}</div>
+            <span class="badge-verified"><i class="fas fa-shield-alt"></i> Réservation vérifiée</span>
+        </div>
+
+        <div class="verify-body">
+            {% if reservation.voyage %}
+            <div class="info-row">
+                <span class="label"><i class="fas fa-plane"></i> Voyage</span>
+                <span class="value">{{ reservation.voyage.titre }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label"><i class="fas fa-map-marker-alt"></i> Destination</span>
+                <span class="value">{{ reservation.voyage.destination }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label"><i class="fas fa-calendar-alt"></i> Départ</span>
+                <span class="value">{{ reservation.voyage.dateDepart ? reservation.voyage.dateDepart|date('d/m/Y') : 'N/A' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label"><i class="fas fa-calendar-check"></i> Retour</span>
+                <span class="value">{{ reservation.voyage.dateRetour ? reservation.voyage.dateRetour|date('d/m/Y') : 'N/A' }}</span>
+            </div>
+            {% endif %}
+            <div class="info-row">
+                <span class="label"><i class="fas fa-users"></i> Personnes</span>
+                <span class="value">{{ reservation.nbrPersonnes }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label"><i class="fas fa-clock"></i> Réservé le</span>
+                <span class="value">{{ reservation.dateReservation ? reservation.dateReservation|date('d/m/Y H:i') : 'N/A' }}</span>
+            </div>
+
+            <div class="total-row">
+                <span class="label">Montant Total</span>
+                <span class="value">{{ reservation.montantTotal|number_format(2, ',', ' ') }} TND</span>
+            </div>
+        </div>
+
+        <div class="verify-footer">
+            <div class="ref">Réf : TAHWISSA-RES-{{ reservation.id }}</div>
+            <p>
+                Ce document confirme l'authenticité de cette réservation.<br>
+                🌍 Tahwissa — Agence de Voyages & Tourisme, Tunisie
+            </p>
+        </div>
+    </div>
+</body>
+</html>

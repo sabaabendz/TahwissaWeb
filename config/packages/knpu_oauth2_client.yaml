@@ -1,0 +1,17 @@
+knpu_oauth2_client:
+    clients:
+        # TODO: set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env
+        google_client:
+            type: google
+            client_id: '%env(GOOGLE_CLIENT_ID)%'
+            client_secret: '%env(GOOGLE_CLIENT_SECRET)%'
+            redirect_route: connect_google_check
+            redirect_params: {}
+
+        # TODO: set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET in .env
+        github_client:
+            type: github
+            client_id: '%env(GITHUB_CLIENT_ID)%'
+            client_secret: '%env(GITHUB_CLIENT_SECRET)%'
+            redirect_route: connect_github_check
+            redirect_params: {}

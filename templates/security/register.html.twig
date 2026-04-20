@@ -1,0 +1,92 @@
+{% extends 'base_auth.html.twig' %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block body %}
+<div class="auth-card">
+    <div class="auth-logo">
+        <h1><i class="fas fa-plane-departure"></i> Tahwissa</h1>
+        <p>Créez votre compte</p>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate'}}) }}
+
+        {% if registrationForm.vars.errors|length > 0 %}
+            <div class="alert alert-danger">
+                {{ form_errors(registrationForm) }}
+            </div>
+        {% endif %}
+
+        <div class="form-floating">
+            {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control', 'placeholder': 'Email'}}) }}
+            <label><i class="fas fa-envelope me-1"></i> Email</label>
+            {{ form_errors(registrationForm.email) }}
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-floating">
+                    {{ form_widget(registrationForm.firstName, {'attr': {'class': 'form-control', 'placeholder': 'Prénom'}}) }}
+                    <label><i class="fas fa-user me-1"></i> Prénom</label>
+                    {{ form_errors(registrationForm.firstName) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    {{ form_widget(registrationForm.lastName, {'attr': {'class': 'form-control', 'placeholder': 'Nom'}}) }}
+                    <label><i class="fas fa-user me-1"></i> Nom</label>
+                    {{ form_errors(registrationForm.lastName) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-floating">
+            {{ form_widget(registrationForm.phone, {'attr': {'class': 'form-control', 'placeholder': 'Téléphone'}}) }}
+            <label><i class="fas fa-phone me-1"></i> Téléphone</label>
+            {{ form_errors(registrationForm.phone) }}
+        </div>
+
+        <div class="form-floating">
+            {{ form_widget(registrationForm.plainPassword.first, {'attr': {'class': 'form-control', 'placeholder': 'Mot de passe'}}) }}
+            <label><i class="fas fa-lock me-1"></i> Mot de passe</label>
+            {{ form_errors(registrationForm.plainPassword.first) }}
+        </div>
+
+        <div class="form-floating">
+            {{ form_widget(registrationForm.plainPassword.second, {'attr': {'class': 'form-control', 'placeholder': 'Confirmer'}}) }}
+            <label><i class="fas fa-lock me-1"></i> Confirmer le mot de passe</label>
+            {{ form_errors(registrationForm.plainPassword.second) }}
+        </div>
+
+        <div class="form-check mb-3">
+            {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
+            <label class="form-check-label">J'accepte les conditions d'utilisation</label>
+            {{ form_errors(registrationForm.agreeTerms) }}
+        </div>
+
+        <button type="submit" class="btn-auth">
+            <i class="fas fa-user-plus me-2"></i>S'inscrire
+        </button>
+
+    {{ form_end(registrationForm) }}
+
+    <div class="auth-divider">
+        <span>ou</span>
+    </div>
+
+    <div class="auth-links">
+        <p style="color:#64748b;font-size:0.9rem;">Vous avez déjà un compte ?</p>
+        <a href="{{ path('app_login') }}"><i class="fas fa-sign-in-alt me-1"></i>Se connecter</a>
+    </div>
+</div>
+
+{% endblock %}
