@@ -1,0 +1,28 @@
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var el = document.getElementById('event-detail-map');
+    if (!el || typeof L === 'undefined') return;
+    var lat = parseFloat(el.dataset.lat, 10);
+    var lng = parseFloat(el.dataset.lng, 10);
+    if (isNaN(lat) || isNaN(lng)) return;
+    var title = el.dataset.title || '';
+    var label = el.dataset.label || '';
+    var map = L.map(el, { scrollWheelZoom: false }).setView([lat, lng], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a>'
+    }).addTo(map);
+    var osmLink = 'https://www.openstreetmap.org/?mlat=' + encodeURIComponent(lat) + '&mlon=' + encodeURIComponent(lng) + '#map=16/' + lat + '/' + lng;
+    var popupHtml = '<div style="min-width:200px;line-height:1.5;"><strong style="font-size:1.02em;">' + escapeHtml(title) + '</strong><br><span style="color:#64748b;font-size:0.9em;">' + escapeHtml(label) + '</span><br><a href="' + osmLink + '" target="_blank" rel="noopener noreferrer" style="margin-top:8px;display:inline-block;font-weight:600;">Ouvrir dans OpenStreetMap →</a></div>';
+    L.marker([lat, lng]).addTo(map).bindPopup(popupHtml).openPopup();
+    setTimeout(function () { map.invalidateSize(); }, 250);
+    window.addEventListener('resize', function () { map.invalidateSize(); });
+    function escapeHtml(s) {
+        if (!s) return '';
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+});
+</script>

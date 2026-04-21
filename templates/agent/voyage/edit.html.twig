@@ -1,0 +1,83 @@
+{% extends 'agent/layout.html.twig' %}
+{% block title %}Agent - Modifier Voyage{% endblock %}
+{% block content %}
+<div class="top-bar">
+    <div><h1><i class="fas fa-edit" style="color:var(--primary);margin-right:10px;"></i>Modifier Voyage #{{ voyage.id }}</h1></div>
+    <a href="{{ path('agent_voyage_index') }}" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left"></i> Retour</a>
+</div>
+<div class="form-card">
+    <h2><i class="fas fa-plane" style="color:var(--primary);"></i> Modifier</h2>
+    <p class="subtitle">{{ voyage.titre }} — {{ voyage.destination }}</p>
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+    <div class="form-group">{{ form_label(form.titre) }}{{ form_widget(form.titre) }}{% for e in form.titre.vars.errors %}<div class="form-error">{{ e.message }}</div>{% endfor %}</div>
+    <div class="form-group">
+        {{ form_label(form.description) }}
+        <div style="display:flex;gap:8px;align-items:flex-start;">
+            <div style="flex:1;">{{ form_widget(form.description) }}</div>
+            <button type="button" id="ai-generate-btn" class="btn btn-accent btn-sm" style="white-space:nowrap;margin-top:2px;" title="Générer avec l'IA">
+                <i class="fas fa-magic"></i> IA
+            </button>
+        </div>
+        <div id="ai-generate-status" style="font-size:0.8rem;margin-top:4px;"></div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">{{ form_label(form.destination) }}{{ form_widget(form.destination) }}{% for e in form.destination.vars.errors %}<div class="form-error">{{ e.message }}</div>{% endfor %}</div>
+        <div class="form-group">{{ form_label(form.categorie) }}{{ form_widget(form.categorie) }}</div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">{{ form_label(form.prixUnitaire) }}{{ form_widget(form.prixUnitaire) }}{% for e in form.prixUnitaire.vars.errors %}<div class="form-error">{{ e.message }}</div>{% endfor %}</div>
+        <div class="form-group">{{ form_label(form.placesDisponibles) }}{{ form_widget(form.placesDisponibles) }}{% for e in form.placesDisponibles.vars.errors %}<div class="form-error">{{ e.message }}</div>{% endfor %}</div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">{{ form_label(form.dateDepart) }}{{ form_widget(form.dateDepart) }}{% for e in form.dateDepart.vars.errors %}<div class="form-error">{{ e.message }}</div>{% endfor %}</div>
+        <div class="form-group">{{ form_label(form.dateRetour) }}{{ form_widget(form.dateRetour) }}{% for e in form.dateRetour.vars.errors %}<div class="form-error">{{ e.message }}</div>{% endfor %}</div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">{{ form_label(form.imageUrl) }}{{ form_widget(form.imageUrl) }}</div>
+        <div class="form-group">{{ form_label(form.statut) }}{{ form_widget(form.statut) }}</div>
+    </div>
+    <div class="form-actions">
+        <a href="{{ path('agent_voyage_index') }}" class="btn btn-outline btn-sm">Annuler</a>
+        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Enregistrer</button>
+    </div>
+    {{ form_end(form) }}
+</div>
+
+<script>
+document.getElementById('ai-generate-btn').addEventListener('click', async function() {
+    const btn = this;
+    const status = document.getElementById('ai-generate-status');
+    const dest = document.getElementById('voyage_destination')?.value?.trim();
+    if (!dest) { status.innerHTML = '<span style="color:#e74c3c">Remplissez d\'abord la destination.</span>'; return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...';
+    status.innerHTML = '<span style="color:#3498db">Génération en cours…</span>';
+
+    try {
+        const res = await fetch('{{ path("agent_voyage_generate_description") }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                destination: dest,
+                categorie: document.getElementById('voyage_categorie')?.value || '',
+                dateDepart: document.getElementById('voyage_dateDepart')?.value || '',
+                dateRetour: document.getElementById('voyage_dateRetour')?.value || '',
+                prix: document.getElementById('voyage_prixUnitaire')?.value || ''
+            })
+        });
+        const data = await res.json();
+        if (data.description) {
+            document.getElementById('voyage_description').value = data.description;
+            status.innerHTML = '<span style="color:#27ae60"><i class="fas fa-check"></i> Description générée !</span>';
+        } else {
+            status.innerHTML = '<span style="color:#e74c3c">' + (data.error || 'Erreur inconnue') + '</span>';
+        }
+    } catch(e) {
+        status.innerHTML = '<span style="color:#e74c3c">Erreur réseau.</span>';
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-magic"></i> IA';
+});
+</script>
+{% endblock %}

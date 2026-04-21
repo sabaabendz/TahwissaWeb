@@ -1,0 +1,72 @@
+{% extends 'client/layout.html.twig' %}
+{% block title %}{{ destination.nom }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:16px;">
+    <a href="{{ path('client_destination_index') }}" style="color:var(--primary);text-decoration:none;font-size:0.9rem;font-weight:500;">
+        <i class="fas fa-arrow-left"></i> Retour aux destinations
+    </a>
+</div>
+
+<div class="detail-card">
+    <div class="detail-header">
+        <div>
+            <h2 style="font-size:1.8rem;font-weight:800;margin-bottom:10px;">
+                <i class="fas fa-map-marker-alt" style="color:var(--primary);"></i> {{ destination.nom }}
+            </h2>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span class="badge badge-primary"><i class="fas fa-flag"></i> {{ destination.pays }}</span>
+                {% if destination.ville %}
+                    <span class="badge badge-purple"><i class="fas fa-city"></i> {{ destination.ville }}</span>
+                {% endif %}
+                <span class="badge badge-info">{{ destination.pointsInteret|length }} points d'intérêt</span>
+            </div>
+        </div>
+    </div>
+
+    {% if destination.description %}
+    <div style="margin-bottom:28px;padding:20px;background:#f8fafc;border-radius:var(--radius-sm);border-left:4px solid var(--primary);color:#475569;font-size:0.95rem;line-height:1.8;">
+        {{ destination.description }}
+    </div>
+    {% endif %}
+
+    <div class="detail-grid">
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-globe"></i> Pays</div>
+            <div class="value">{{ destination.pays }}</div>
+        </div>
+        {% if destination.ville %}
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-city"></i> Ville</div>
+            <div class="value">{{ destination.ville }}</div>
+        </div>
+        {% endif %}
+        <div class="detail-item">
+            <div class="label"><i class="fas fa-landmark"></i> Points d'intérêt</div>
+            <div class="value">{{ destination.pointsInteret|length }} lieux à visiter</div>
+        </div>
+    </div>
+
+    {% if destination.pointsInteret|length > 0 %}
+    <div style="margin-top:32px;">
+        <h3 style="margin-bottom:20px;font-size:1.3rem;">
+            <i class="fas fa-landmark" style="color:var(--primary);"></i> Points d'intérêt à découvrir
+        </h3>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            {% for point in destination.pointsInteret %}
+            <div style="padding:15px;background:#f8fafc;border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                <div>
+                    <strong style="font-size:1rem;">{{ point.nom }}</strong>
+                    <span class="badge badge-purple" style="margin-left:10px;">{{ point.type|capitalize }}</span>
+                    <p style="font-size:0.85rem;color:var(--text-muted);margin-top:5px;">{{ point.description|slice(0, 100) ~ '...' }}</p>
+                </div>
+                <a href="{{ path('client_pointinteret_show', {id: point.idPointInteret}) }}" class="btn btn-outline btn-xs">
+                    <i class="fas fa-eye"></i> Détails
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'client/layout.html.twig' %}
+{% block title %}Points d'intérêt{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:32px;">
+    <h1 style="font-size:2rem;font-weight:800;margin-bottom:8px;">
+        <i class="fas fa-landmark" style="color:var(--primary);margin-right:10px;"></i> Points d'intérêt
+    </h1>
+    <p style="color:var(--text-muted);">Découvrez les lieux incontournables à visiter dans nos destinations</p>
+
+    <form method="get" action="{{ path('client_pointinteret_index') }}" style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+        <div class="search-box" style="flex:1;max-width:350px;">
+            <i class="fas fa-search" style="color:var(--text-muted);"></i>
+            <input type="text" name="search" placeholder="Rechercher un lieu..." value="{{ search }}">
+            <button type="submit" style="background:none;border:none;cursor:pointer;color:var(--primary);font-weight:600;font-size:0.85rem;">OK</button>
+        </div>
+        <select name="type" style="padding:10px 20px;border-radius:50px;border:2px solid #e2e8f0;background:white;font-family:'Poppins';font-size:0.85rem;cursor:pointer;" onchange="this.form.submit()">
+            <option value="">Tous les types</option>
+            {% for type in ['monument', 'plage', 'musée', 'restaurant', 'hôtel'] %}
+                <option value="{{ type }}" {{ currentType == type ? 'selected' }}>{{ type|capitalize }}</option>
+            {% endfor %}
+        </select>
+        {% if search or currentType %}
+            <a href="{{ path('client_pointinteret_index') }}" class="btn btn-outline btn-sm" style="padding:8px 20px;">Réinitialiser</a>
+        {% endif %}
+    </form>
+</div>
+
+{% if pointsInteret is empty %}
+    <div class="empty-state">
+        <i class="fas fa-landmark"></i>
+        <h3>Aucun point d'intérêt trouvé</h3>
+        <p>Essayez avec d'autres mots-clés ou modifiez les filtres.</p>
+        {% if search or currentType %}
+            <a href="{{ path('client_pointinteret_index') }}" class="btn btn-outline mt-3">Réinitialiser</a>
+        {% endif %}
+    </div>
+{% else %}
+    <div class="voyage-grid">
+        {% for point in pointsInteret %}
+        <div class="voyage-card">
+            <div class="voyage-card-image" style="background:linear-gradient(135deg,
+                {% if point.type == 'monument' %}#1565C0,#42A5F5
+                {% elseif point.type == 'plage' %}#00C853,#69F0AE
+                {% elseif point.type == 'musée' %}#7C4DFF,#E040FB
+                {% elseif point.type == 'restaurant' %}#FF6D00,#FFAB40
+                {% elseif point.type == 'hôtel' %}#00B0FF,#00E5FF
+                {% else %}#455A64,#78909C{% endif %});">
+                <i class="fas fa-{{ point.type == 'monument' ? 'landmark' : point.type == 'plage' ? 'umbrella-beach' : point.type == 'musée' ? 'museum' : point.type == 'restaurant' ? 'utensils' : 'hotel' }}" style="font-size:3rem;color:white;opacity:0.9;"></i>
+                <span class="badge badge-primary category-badge">{{ point.type|capitalize }}</span>
+            </div>
+            <div class="voyage-card-body">
+                <h3>{{ point.nom }}</h3>
+                <div class="destination"><i class="fas fa-map-marker-alt"></i> {{ point.destination.nom }}, {{ point.destination.pays }}</div>
+                <div class="info-row">
+                    <span><i class="fas fa-info-circle" style="color:var(--primary);"></i> Lieu emblématique</span>
+                </div>
+                <div class="price">{{ point.destination.pays }}</div>
+            </div>
+            <div class="voyage-card-footer">
+                <a href="{{ path('client_pointinteret_show', {id: point.idPointInteret}) }}" class="btn btn-outline btn-xs">
+                    <i class="fas fa-eye"></i> Détails
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

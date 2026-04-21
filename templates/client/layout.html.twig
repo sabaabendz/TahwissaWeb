@@ -1,0 +1,447 @@
+{# Client layout - Front office with top navbar instead of sidebar #}
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+<style>
+    body { background: #f0f4f8; }
+    .client-navbar {
+        background: white;
+        padding: 12px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    .client-navbar .brand {
+        display: flex; align-items: center; gap: 10px;
+        text-decoration: none; font-weight: 800; font-size: 1.3rem; color: var(--text-dark);
+    }
+    .client-navbar .brand span {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .client-nav { display: flex; align-items: center; gap: 24px; list-style: none; }
+    .client-nav a {
+        color: #64748b; text-decoration: none; font-weight: 500; font-size: 0.9rem;
+        transition: var(--transition); padding: 8px 16px; border-radius: 50px;
+    }
+    .client-nav a:hover, .client-nav a.active { color: var(--primary); background: rgba(21,101,192,0.06); }
+    .client-main { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+    body.dark { background: #0f172a !important; color: #e2e8f0; }
+body.dark .client-navbar { background: #1e293b; box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+body.dark .client-nav a { color: #94a3b8; }
+body.dark .client-nav a:hover, body.dark .client-nav a.active { color: #60a5fa; background: rgba(96,165,250,0.1); }
+body.dark .voyage-card { background: #1e293b !important; box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; }
+body.dark .voyage-card h3 { color: #f1f5f9; }
+body.dark .voyage-card .destination, body.dark .voyage-card p { color: #94a3b8; }
+body.dark .voyage-card-footer { border-top-color: #334155 !important; background: #1e293b !important; }
+body.dark .btn-react[data-type="LIKE"]:not([style*="#00C853"]) { background: #1e293b !important; color: #94a3b8 !important; }
+body.dark .btn-react[data-type="DISLIKE"]:not([style*="#FF1744"]) { background: #1e293b !important; color: #94a3b8 !important; }
+body.dark .dashboard-card, body.dark .detail-card, body.dark .form-card { background: #1e293b !important; }
+body.dark #theme-toggle { border-color: #334155; color: #94a3b8; }
+body.dark .search-box { background: #1e293b !important; border-color: #334155 !important; }
+body.dark input, body.dark select, body.dark textarea { background: #0f172a !important; color: #e2e8f0 !important; border-color: #334155 !important; }
+</style>
+{% endblock %}
+
+{% block body %}
+<nav class="client-navbar">
+    <a href="{{ path('app_home') }}" class="brand">
+        <div style="width:38px;height:38px;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">✈️</div>
+        <span>Tahwissa</span>
+    </a>
+    <ul class="client-nav">
+        <li><a href="{{ path('client_voyage_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_voyage' ? 'active' : '' }}"><i class="fas fa-plane"></i> Voyages</a></li>
+         <li><a href="{{ path('client_destination_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_destination' ? 'active' : '' }}"><i class="fas fa-map-marker-alt"></i> Destinations</a></li>
+         <li><a href="{{ path('client_pointinteret_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_pointinteret' ? 'active' : '' }}"><i class="fas fa-landmark"></i> Points d'intérêt</a></li>
+        <li><a href="{{ path('client_reservation_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_reservation' and not (app.request.attributes.get('_route') starts with 'client_reservation_evenement') and not (app.request.attributes.get('_route') starts with 'client_reservation_transport') ? 'active' : '' }}"><i class="fas fa-ticket-alt"></i> Rés. Voyages</a></li>
+        <li><a href="{{ path('client_evenement_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_evenement' ? 'active' : '' }}"><i class="fas fa-calendar-alt"></i> Événements</a></li>
+        <li><a href="{{ path('client_reservation_evenement_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_reservation_evenement' ? 'active' : '' }}"><i class="fas fa-calendar-check"></i> Rés. Événements</a></li>
+
+        <li><a href="{{ path('client_transport_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_transport' ? 'active' : '' }}"><i class="fas fa-bus"></i> Transport</a></li>
+        <li><a href="{{ path('client_reservation_transport_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_reservation_transport' ? 'active' : '' }}"><i class="fas fa-calendar-alt"></i> Rés. Transport</a></li>
+        <li><a href="{{ path('client_reclamation_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_reclamation' ? 'active' : '' }}"><i class="fas fa-flag"></i> Réclamations</a></li>
+        <li>
+            {% if app.user %}
+                <span style="color:#64748b;font-size:0.85rem;padding:8px 12px;">
+                    <i class="fas fa-user-circle"></i> {{ app.user.name }}
+                </span>
+                <a href="{{ path('app_logout') }}" style="color:var(--danger);"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+            {% else %}
+                <a href="{{ path('app_login') }}"><i class="fas fa-sign-in-alt"></i> Connexion</a>
+            {% endif %}
+        </li>
+        <li>
+    <button id="theme-toggle" onclick="toggleTheme()" style="background:none;border:2px solid #e2e8f0;border-radius:50px;padding:6px 14px;cursor:pointer;font-size:0.82rem;font-weight:600;color:#64748b;display:flex;align-items:center;gap:6px;">
+        <span id="theme-icon">🌙</span><span id="theme-label">Nuit</span>
+    </button>
+</li>
+    </ul>
+</nav>
+
+<div class="client-main">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }}">
+                <i class="fas fa-{{ label == 'success' ? 'check-circle' : (label == 'danger' ? 'exclamation-circle' : (label == 'warning' ? 'exclamation-triangle' : 'info-circle')) }}"></i>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {% block content %}{% endblock %}
+</div>
+<script>
+function toggleTheme() {
+    const dark = document.body.classList.toggle('dark');
+    localStorage.setItem('tahwissa-theme', dark ? 'dark' : 'light');
+    document.getElementById('theme-icon').textContent = dark ? '☀️' : '🌙';
+    document.getElementById('theme-label').textContent = dark ? 'Jour' : 'Nuit';
+}
+(function() {
+    if (localStorage.getItem('tahwissa-theme') === 'dark') {
+        document.body.classList.add('dark');
+        const icon = document.getElementById('theme-icon');
+        const label = document.getElementById('theme-label');
+        if (icon) { icon.textContent = '☀️'; label.textContent = 'Jour'; }
+    }
+})();
+
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-react');
+    if (!btn) return;
+    const container = btn.closest('.reaction-btns');
+    const url = container.dataset.reactUrl;
+    const type = btn.dataset.type;
+    const body = new FormData();
+    body.append('type', type);
+
+    fetch(url, { method: 'POST', body, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) { alert(data.error); return; }
+        const likeBtn = container.querySelector('[data-type="LIKE"]');
+        const dislikeBtn = container.querySelector('[data-type="DISLIKE"]');
+        likeBtn.querySelector('.like-count').textContent = data.likes;
+        dislikeBtn.querySelector('.dislike-count').textContent = data.dislikes;
+        const grey = '#f1f5f9', greyText = '#64748b';
+        likeBtn.style.background = data.userReaction === 'LIKE' ? '#00C853' : grey;
+        likeBtn.style.color = data.userReaction === 'LIKE' ? 'white' : greyText;
+        dislikeBtn.style.background = data.userReaction === 'DISLIKE' ? '#FF1744' : grey;
+        dislikeBtn.style.color = data.userReaction === 'DISLIKE' ? 'white' : greyText;
+    })
+    .catch(() => alert('Erreur réseau'));
+});
+</script>
+
+{# ══════════════════════════════════════════════════════════ #}
+{# ═══ CHATBOT IA WIDGET ═══ #}
+{# ══════════════════════════════════════════════════════════ #}
+
+<style>
+/* ── Chatbot Toggle Button ── */
+.chatbot-toggle {
+    position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+    width: 62px; height: 62px; border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none; cursor: pointer; color: white; font-size: 1.6rem;
+    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.45);
+    transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;
+}
+.chatbot-toggle:hover { transform: scale(1.1); box-shadow: 0 8px 35px rgba(102, 126, 234, 0.6); }
+.chatbot-toggle.active { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+.chatbot-toggle .badge-notif {
+    position: absolute; top: -2px; right: -2px;
+    width: 18px; height: 18px; background: #e74c3c; border-radius: 50%;
+    font-size: 0.65rem; display: flex; align-items: center; justify-content: center;
+    animation: pulse-notif 2s infinite;
+}
+@keyframes pulse-notif { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+
+/* ── Chat Window ── */
+.chatbot-window {
+    position: fixed; bottom: 100px; right: 28px; z-index: 9998;
+    width: 400px; max-height: 550px;
+    background: white; border-radius: 20px;
+    box-shadow: 0 12px 50px rgba(0,0,0,0.15);
+    display: none; flex-direction: column; overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+.chatbot-window.open { display: flex; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Header */
+.chatbot-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    padding: 16px 20px; color: white; display: flex; align-items: center; gap: 12px;
+}
+.chatbot-header .avatar {
+    width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+}
+.chatbot-header h4 { margin: 0; font-size: 1rem; font-weight: 700; }
+.chatbot-header p { margin: 0; font-size: 0.75rem; opacity: 0.85; }
+
+/* Messages */
+.chatbot-messages {
+    flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+    max-height: 340px; scroll-behavior: smooth;
+}
+.chat-msg {
+    max-width: 85%; padding: 10px 14px; border-radius: 16px;
+    font-size: 0.85rem; line-height: 1.5; word-wrap: break-word;
+}
+.chat-msg.bot {
+    background: #f1f3f5; color: #2d3436; align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+.chat-msg.user {
+    background: linear-gradient(135deg, #667eea, #764ba2); color: white; align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+.chat-msg.bot .voyage-card-mini {
+    background: white; border-radius: 10px; padding: 10px; margin-top: 8px;
+    border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s;
+}
+.chat-msg.bot .voyage-card-mini:hover { border-color: #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.15); }
+
+.typing-indicator { display: flex; gap: 4px; align-self: flex-start; padding: 12px 16px; }
+.typing-indicator span {
+    width: 8px; height: 8px; background: #b2bec3; border-radius: 50%;
+    animation: typingBounce 1.4s infinite;
+}
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-8px); } }
+
+/* Input */
+.chatbot-input {
+    padding: 12px 16px; border-top: 1px solid #f1f3f5; display: flex; gap: 8px; align-items: center;
+}
+.chatbot-input input {
+    flex: 1; border: 2px solid #e2e8f0; border-radius: 50px; padding: 10px 16px;
+    font-size: 0.85rem; outline: none; transition: border-color 0.2s;
+}
+.chatbot-input input:focus { border-color: #667eea; }
+.chatbot-input button {
+    width: 40px; height: 40px; border-radius: 50%; border: none;
+    background: linear-gradient(135deg, #667eea, #764ba2); color: white;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s;
+}
+.chatbot-input button:hover { transform: scale(1.1); }
+.chatbot-input button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* Quick suggestions */
+.quick-suggestions {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px;
+}
+.quick-suggestions button {
+    background: #f1f3f5; border: 1px solid #e2e8f0; border-radius: 50px;
+    padding: 5px 12px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+    color: #636e72;
+}
+.quick-suggestions button:hover { background: #667eea; color: white; border-color: #667eea; }
+
+/* Dark mode */
+body.dark .chatbot-window { background: #1e293b; }
+body.dark .chat-msg.bot { background: #334155; color: #e2e8f0; }
+body.dark .chatbot-input { border-top-color: #334155; }
+body.dark .chatbot-input input { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+body.dark .chatbot-input input:focus { border-color: #667eea; }
+body.dark .quick-suggestions button { background: #334155; color: #94a3b8; border-color: #475569; }
+body.dark .chat-msg.bot .voyage-card-mini { background: #0f172a; border-color: #475569; color: #e2e8f0; }
+</style>
+
+<!-- Chatbot Toggle Button -->
+<button class="chatbot-toggle" id="chatbot-toggle" onclick="toggleChatbot()" title="Tahwissa AI Assistant">
+    <span id="chatbot-icon">🤖</span>
+    <span class="badge-notif" id="chatbot-notif" style="display:none;"></span>
+</button>
+
+<!-- Chatbot Window -->
+<div class="chatbot-window" id="chatbot-window">
+    <div class="chatbot-header">
+        <div class="avatar">🌍</div>
+        <div>
+            <h4>Tahwissa AI</h4>
+            <p>Votre assistant voyage intelligent</p>
+        </div>
+    </div>
+
+    <div class="chatbot-messages" id="chatbot-messages">
+        <div class="chat-msg bot">
+            Bonjour ! 👋 Je suis <strong>Tahwissa AI</strong>, votre assistant de voyage.
+            <br><br>Comment puis-je vous aider ? Dites-moi votre destination rêvée, votre budget, ou posez-moi une question ! 🌍✈️
+        </div>
+    </div>
+
+    <div class="quick-suggestions" id="quick-suggestions">
+        <button onclick="sendQuickMessage(this)">🏖️ Voyages balnéaires</button>
+        <button onclick="sendQuickMessage(this)">💰 Voyages pas chers</button>
+        <button onclick="sendQuickMessage(this)">🏔️ Aventure nature</button>
+        <button onclick="sendQuickMessage(this)">👨‍👩‍👧‍👦 Voyage en famille</button>
+        <button onclick="sendQuickMessage(this)">📅 Prochains départs</button>
+    </div>
+
+    <div class="chatbot-input">
+        <input type="text" id="chatbot-input" placeholder="Écrivez votre message..."
+               onkeypress="if(event.key==='Enter') sendChatMessage()">
+        <button id="chatbot-send" onclick="sendChatMessage()">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+(function() {
+    const CHATBOT_URL = '{{ path("client_chatbot_send") }}';
+    let chatHistory = [];
+    let isOpen = false;
+    let isFirstOpen = true;
+
+    window.toggleChatbot = function() {
+        const win = document.getElementById('chatbot-window');
+        const toggle = document.getElementById('chatbot-toggle');
+        const icon = document.getElementById('chatbot-icon');
+        isOpen = !isOpen;
+        win.classList.toggle('open', isOpen);
+        toggle.classList.toggle('active', isOpen);
+        icon.textContent = isOpen ? '✕' : '🤖';
+        document.getElementById('chatbot-notif').style.display = 'none';
+        if (isOpen) {
+            document.getElementById('chatbot-input').focus();
+        }
+    };
+
+    window.sendQuickMessage = function(btn) {
+        const text = btn.textContent.trim();
+        document.getElementById('chatbot-input').value = text;
+        sendChatMessage();
+        // Hide suggestions after first use
+        document.getElementById('quick-suggestions').style.display = 'none';
+    };
+
+    window.sendChatMessage = function() {
+        const input = document.getElementById('chatbot-input');
+        const message = input.value.trim();
+        if (!message) return;
+
+        // Add user message to UI
+        addMessage(message, 'user');
+        input.value = '';
+        input.disabled = true;
+        document.getElementById('chatbot-send').disabled = true;
+
+        // Show typing indicator
+        const typing = showTyping();
+
+        // Send to backend
+        fetch(CHATBOT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({
+                message: message,
+                history: chatHistory,
+            }),
+        })
+        .then(r => r.json())
+        .then(data => {
+            removeTyping(typing);
+            input.disabled = false;
+            document.getElementById('chatbot-send').disabled = false;
+            input.focus();
+
+            // Add to history
+            chatHistory.push({ role: 'user', content: message });
+            chatHistory.push({ role: 'assistant', content: data.reply });
+
+            // Keep history manageable
+            if (chatHistory.length > 20) {
+                chatHistory = chatHistory.slice(-16);
+            }
+
+            // Add bot reply
+            addMessage(data.reply, 'bot', data.voyages || []);
+        })
+        .catch(err => {
+            removeTyping(typing);
+            input.disabled = false;
+            document.getElementById('chatbot-send').disabled = false;
+            addMessage('❌ Erreur de connexion. Vérifiez que votre clé API OpenAI est configurée dans le fichier .env', 'bot');
+        });
+    };
+
+    function addMessage(text, type, voyages) {
+        const container = document.getElementById('chatbot-messages');
+        const msg = document.createElement('div');
+        msg.classList.add('chat-msg', type);
+
+        if (type === 'bot') {
+            // Convert markdown-like formatting
+            let html = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+            msg.innerHTML = html;
+
+            // Add voyage recommendation cards
+            if (voyages && voyages.length > 0) {
+                voyages.forEach(v => {
+                    const card = document.createElement('div');
+                    card.className = 'voyage-card-mini';
+                    card.innerHTML = `
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <strong style="font-size:0.85rem;">✈️ ${v.titre}</strong><br>
+                                <span style="font-size:0.75rem;color:#636e72;">📍 ${v.destination} | 📅 ${v.dateDepart || '?'} → ${v.dateRetour || '?'}</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-weight:800;color:#667eea;font-size:0.9rem;">${parseFloat(v.prix).toFixed(0)} TND</div>
+                                <div style="font-size:0.7rem;color:#636e72;">${v.places} places</div>
+                            </div>
+                        </div>
+                    `;
+                    card.onclick = function() {
+                        window.location.href = '/client/reservation/new/' + v.id;
+                    };
+                    msg.appendChild(card);
+                });
+            }
+        } else {
+            msg.textContent = text;
+        }
+
+        container.appendChild(msg);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function showTyping() {
+        const container = document.getElementById('chatbot-messages');
+        const typing = document.createElement('div');
+        typing.className = 'typing-indicator';
+        typing.id = 'typing-indicator';
+        typing.innerHTML = '<span></span><span></span><span></span>';
+        container.appendChild(typing);
+        container.scrollTop = container.scrollHeight;
+        return typing;
+    }
+
+    function removeTyping(el) {
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+    }
+
+    // Show notification badge after 5 seconds if chat not opened
+    setTimeout(function() {
+        if (!isOpen) {
+            document.getElementById('chatbot-notif').style.display = 'flex';
+        }
+    }, 5000);
+})();
+</script>
+{% endblock %}

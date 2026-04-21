@@ -1,0 +1,52 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Admin - Modifier Réclamation{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <div>
+        <h1><i class="fas fa-pen" style="color:var(--primary);margin-right:10px;"></i>Modifier la Réclamation</h1>
+        <p style="color:var(--text-muted);font-size:0.9rem;">{{ reclamation.titre }}</p>
+    </div>
+    <div class="top-bar-right">
+        <a href="{{ path('admin_reclamation_show', {id: reclamation.id}) }}" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i> Voir</a>
+        <a href="{{ path('admin_reclamation_index') }}" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left"></i> Retour</a>
+    </div>
+</div>
+
+<div class="form-card">
+    <h2><i class="fas fa-flag" style="color:var(--danger);"></i> Modifier la Réclamation</h2>
+    <p class="subtitle">Mettez à jour les informations ou le statut de la réclamation.</p>
+
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+    <div class="form-group {{ form.titre.vars.errors|length > 0 ? 'has-error' : '' }}">
+        {{ form_label(form.titre) }}
+        {{ form_widget(form.titre) }}
+        {% for error in form.titre.vars.errors %}<div class="form-error">{{ error.message }}</div>{% endfor %}
+    </div>
+
+    <div class="form-group {{ form.description.vars.errors|length > 0 ? 'has-error' : '' }}">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description) }}
+        {% for error in form.description.vars.errors %}<div class="form-error">{{ error.message }}</div>{% endfor %}
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            {{ form_label(form.type) }}
+            {{ form_widget(form.type) }}
+        </div>
+        <div class="form-group">
+            {{ form_label(form.statut) }}
+            {{ form_widget(form.statut) }}
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <a href="{{ path('admin_reclamation_index') }}" class="btn btn-outline btn-sm">Annuler</a>
+        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Enregistrer</button>
+    </div>
+
+    {{ form_end(form) }}
+</div>
+{% endblock %}

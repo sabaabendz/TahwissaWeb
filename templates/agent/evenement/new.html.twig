@@ -1,0 +1,82 @@
+{% extends 'agent/layout.html.twig' %}
+{% block title %}Agent - Nouvel Événement{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <div>
+        <h1><i class="fas fa-plus-circle" style="color:var(--accent);margin-right:10px;"></i>Nouvel Événement</h1>
+        <p style="color:var(--text-muted);font-size:0.9rem;">Créer un nouvel événement</p>
+    </div>
+    <a href="{{ path('agent_evenement_index') }}" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left"></i> Retour</a>
+</div>
+
+<div class="form-card">
+    <h2><i class="fas fa-calendar-alt" style="color:var(--primary);"></i> Informations de l'Événement</h2>
+    <p class="subtitle">Remplissez les informations ci-dessous pour créer un nouvel événement.</p>
+
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+    <div class="form-group {{ form.titre.vars.errors|length > 0 ? 'has-error' : '' }}">
+        {{ form_label(form.titre) }}
+        {{ form_widget(form.titre) }}
+        {% for error in form.titre.vars.errors %}<div class="form-error">{{ error.message }}</div>{% endfor %}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description) }}
+    </div>
+
+    <div class="form-row">
+        <div class="form-group {{ form.lieu.vars.errors|length > 0 ? 'has-error' : '' }}">
+            {{ form_label(form.lieu) }}
+            {{ form_widget(form.lieu) }}
+            {% for error in form.lieu.vars.errors %}<div class="form-error">{{ error.message }}</div>{% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form_label(form.categorie) }}
+            {{ form_widget(form.categorie) }}
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group {{ form.dateEvent.vars.errors|length > 0 ? 'has-error' : '' }}">
+            {{ form_label(form.dateEvent) }}
+            {{ form_widget(form.dateEvent) }}
+            {% for error in form.dateEvent.vars.errors %}<div class="form-error">{{ error.message }}</div>{% endfor %}
+        </div>
+        <div class="form-group {{ form.heureEvent.vars.errors|length > 0 ? 'has-error' : '' }}">
+            {{ form_label(form.heureEvent) }}
+            {{ form_widget(form.heureEvent) }}
+            {% for error in form.heureEvent.vars.errors %}<div class="form-error">{{ error.message }}</div>{% endfor %}
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group {{ form.prix.vars.errors|length > 0 ? 'has-error' : '' }}">
+            {{ form_label(form.prix) }}
+            {{ form_widget(form.prix) }}
+            {% for error in form.prix.vars.errors %}<div class="form-error">{{ error.message }}</div>{% endfor %}
+        </div>
+        <div class="form-group {{ form.nbPlaces.vars.errors|length > 0 ? 'has-error' : '' }}">
+            {{ form_label(form.nbPlaces) }}
+            {{ form_widget(form.nbPlaces) }}
+            {% for error in form.nbPlaces.vars.errors %}<div class="form-error">{{ error.message }}</div>{% endfor %}
+        </div>
+    </div>
+
+    {% include 'partials/evenement_form_promo_block.html.twig' %}
+
+    <div class="form-group">
+        {{ form_label(form.statut) }}
+        {{ form_widget(form.statut) }}
+    </div>
+
+    <div class="form-actions">
+        <a href="{{ path('agent_evenement_index') }}" class="btn btn-outline btn-sm">Annuler</a>
+        <button type="submit" class="btn btn-accent btn-sm"><i class="fas fa-check"></i> Créer l'Événement</button>
+    </div>
+
+    {{ form_end(form) }}
+</div>
+{% endblock %}

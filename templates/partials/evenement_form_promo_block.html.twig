@@ -1,0 +1,46 @@
+<details class="form-promo-details" style="margin-bottom:1.25rem;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;background:#fafafa;">
+    <summary style="cursor:pointer;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px;user-select:none;">
+        <i class="fas fa-tags" style="color:var(--accent);"></i> Promotions
+        <span style="font-size:0.8rem;font-weight:400;color:var(--text-muted);">— réduction en % sur le prix de base (optionnel)</span>
+    </summary>
+    <div style="margin-top:16px;" class="form-group {{ form.promoPercent.vars.errors|length > 0 ? 'has-error' : '' }}">
+        {{ form_label(form.promoPercent) }}
+        {{ form_widget(form.promoPercent) }}
+        {{ form_help(form.promoPercent) }}
+        {% for error in form.promoPercent.vars.errors %}<div class="form-error">{{ error.message }}</div>{% endfor %}
+        <p id="js-evenement-prix-preview" style="margin-top:12px;padding:10px 12px;background:#ecfdf5;border-radius:6px;font-size:0.9rem;color:#065f46;display:none;"></p>
+    </div>
+</details>
+<script>
+(function(){
+  var base = document.querySelector('.js-evenement-prix-base');
+  var pct = document.querySelector('.js-evenement-promo-pct');
+  var out = document.getElementById('js-evenement-prix-preview');
+  if (!base || !pct || !out) return;
+  function parseBase() {
+    var raw = (base.value || '').replace(/\s/g, '').replace(',', '.');
+    raw = raw.replace(/[^\d.]/g, '');
+    var n = parseFloat(raw);
+    return isNaN(n) ? 0 : n;
+  }
+  function fmt(n) {
+    return n.toFixed(2).replace('.', ',');
+  }
+  function update() {
+    var b = parseBase();
+    var p = parseInt(pct.value, 10);
+    if (!p || p < 1 || p > 100 || b < 0) {
+      out.style.display = 'none';
+      return;
+    }
+    var finalPrice = Math.round(b * (1 - p / 100) * 100) / 100;
+    out.style.display = 'block';
+    out.innerHTML = '<strong>Prix par place pour le client :</strong> ' + fmt(finalPrice) + ' TND <span style="opacity:.85">(−' + p + ' % sur ' + fmt(b) + ' TND)</span>';
+  }
+  base.addEventListener('input', update);
+  base.addEventListener('change', update);
+  pct.addEventListener('input', update);
+  pct.addEventListener('change', update);
+  update();
+})();
+</script>

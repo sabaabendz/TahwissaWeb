@@ -1,0 +1,19 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Nouvelle destination{% endblock %}
+
+{% block content %}
+<h2 style="color: #1565C0;">✅ Nouvelle destination ajoutée !</h2>
+<p>Bonjour,</p>
+<p>Une nouvelle destination a été ajoutée dans le catalogue :</p>
+
+<div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 15px 0;">
+    <h3 style="margin-top: 0; color: #1565C0;">{{ destination.nom }}</h3>
+    <p><strong>📍 Pays :</strong> {{ destination.pays }}</p>
+    <p><strong>🏙️ Ville :</strong> {{ destination.ville ?? 'Non spécifiée' }}</p>
+</div>
+
+<p>Ajouté le <strong>{{ date|date('d/m/Y à H:i') }}</strong></p>
+
+<a href="{{ url('admin_destination_index') }}" class="button">👀 Voir la destination</a>
+{% endblock %}

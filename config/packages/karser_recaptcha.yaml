@@ -1,0 +1,6 @@
+karser_recaptcha3:
+    # TODO: set RECAPTCHA_PUBLIC_KEY and RECAPTCHA_PRIVATE_KEY in .env
+    site_key: '%env(resolve:RECAPTCHA_PUBLIC_KEY)%'
+    secret_key: '%env(resolve:RECAPTCHA_PRIVATE_KEY)%'
+    score_threshold: 0.5
+    enabled: false

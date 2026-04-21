@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Service;
+
+use Symfony\Component\Mailer\Transport;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mime\Email;
+use Twig\Environment;
+
+class DestinationEmailService
+{
+    private Environment $twig;
+
+    public function __construct(Environment $twig)
+    {
+        $this->twig = $twig;
+    }
+
+    public function notifyDestinationCreated(string $to, array $destinationData): void
+    {
+        // DSN qui a fonctionné dans le test
+        $dsn = 'gmail+smtp://sabsoubbdziri@gmail.com:qtqotfgkxrpfitpr@default';
+        $transport = Transport::fromDsn($dsn);
+        $mailer = new Mailer($transport);
+
+        $html = $this->twig->render('emails/destination_created.html.twig', [
+            'destination' => $destinationData,
+            'date' => new \DateTimeImmutable()
+        ]);
+
+        $email = (new Email())
+            ->from('sabsoubbdziri@gmail.com')
+            ->to($to)
+            ->subject('✅ Nouvelle destination ajoutée - Tahwissa')
+            ->html($html);
+
+        $mailer->send($email);
+    }
+}

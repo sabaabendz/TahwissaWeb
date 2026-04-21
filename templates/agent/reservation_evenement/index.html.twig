@@ -1,0 +1,72 @@
+{% extends 'agent/layout.html.twig' %}
+{% block title %}Agent - Réservations Événements{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <div>
+        <h1><i class="fas fa-calendar-check" style="color:var(--accent);margin-right:10px;"></i>Réservations Événements</h1>
+        <p style="color:var(--text-muted);font-size:0.9rem;">Gérer les réservations d'événements</p>
+    </div>
+    <div class="top-bar-right">
+        <a href="{{ path('agent_reservation_evenement_new') }}" class="btn btn-accent btn-sm"><i class="fas fa-plus"></i> Nouvelle</a>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <a href="{{ path('agent_reservation_evenement_index') }}" class="filter-btn {{ currentStatut == '' ? 'active' : '' }}">Toutes</a>
+    <a href="{{ path('agent_reservation_evenement_index', {statut: 'EN_ATTENTE'}) }}" class="filter-btn {{ currentStatut == 'EN_ATTENTE' ? 'active' : '' }}">🕐 En attente</a>
+    <a href="{{ path('agent_reservation_evenement_index', {statut: 'CONFIRMEE'}) }}" class="filter-btn {{ currentStatut == 'CONFIRMEE' ? 'active' : '' }}">✅ Confirmées</a>
+    <a href="{{ path('agent_reservation_evenement_index', {statut: 'ANNULEE'}) }}" class="filter-btn {{ currentStatut == 'ANNULEE' ? 'active' : '' }}">❌ Annulées</a>
+</div>
+
+<div class="dashboard-card">
+    {% if reservations is empty %}
+        <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <h3>Aucune réservation trouvée</h3>
+            <p>Aucune réservation ne correspond à ce filtre.</p>
+        </div>
+    {% else %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Utilisateur</th>
+                    <th>Événement</th>
+                    <th>Date Rés.</th>
+                    <th>Places</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in reservations %}
+                <tr>
+                    <td style="font-weight:600;color:var(--text-muted);">#{{ res.id }}</td>
+                    <td>{{ usersById[res.idUser] is defined ? usersById[res.idUser].nom : 'User #' ~ res.idUser }}</td>
+                    <td>
+                        {% if res.evenement %}
+                            <i class="fas fa-calendar-alt" style="color:var(--primary);margin-right:4px;"></i>
+                            {{ res.evenement.titre }}
+                        {% else %}
+                            <span style="color:var(--text-muted);">Événement supprimé</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ res.dateReservation ? res.dateReservation|date('d/m/Y') : '-' }}</td>
+                    <td style="text-align:center;font-weight:700;">{{ res.nbPlacesReservees }}</td>
+                    <td><span class="badge badge-{{ res.statutBadgeClass }}">{{ res.statutLabel }}</span></td>
+                    <td>
+                        <a href="{{ path('agent_reservation_evenement_show', {id: res.id}) }}" class="action-btn view" title="Voir"><i class="fas fa-eye"></i></a>
+                        <a href="{{ path('agent_reservation_evenement_edit', {id: res.id}) }}" class="action-btn edit" title="Modifier"><i class="fas fa-pen"></i></a>
+                        {% if res.statut == 'EN_ATTENTE' %}
+                            <a href="{{ path('agent_reservation_evenement_status', {id: res.id, statut: 'CONFIRMEE'}) }}" class="action-btn confirm" title="Confirmer"><i class="fas fa-check"></i></a>
+                            <a href="{{ path('agent_reservation_evenement_status', {id: res.id, statut: 'ANNULEE'}) }}" class="action-btn delete" title="Annuler"><i class="fas fa-times"></i></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Test Mailer{% endblock %}
+
+{% block content %}
+<h2 style="color: #1565C0;">📧 Test de configuration</h2>
+<p>Félicitations !</p>
+<p>Votre configuration d'envoi d'emails fonctionne correctement.</p>
+<p>Email envoyé le <strong>{{ date|date('d/m/Y à H:i') }}</strong></p>
+{% endblock %}

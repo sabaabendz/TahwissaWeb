@@ -1,0 +1,46 @@
+{% extends 'client/layout.html.twig' %}
+{% block title %}Nouvelle Réclamation{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:16px;">
+    <a href="{{ path('client_reclamation_index') }}" style="color:var(--primary);text-decoration:none;font-size:0.9rem;font-weight:500;">
+        <i class="fas fa-arrow-left"></i> Mes réclamations
+    </a>
+</div>
+
+<div class="form-card">
+    <h2><i class="fas fa-flag" style="color:var(--danger);"></i> Soumettre une Réclamation</h2>
+    <p class="subtitle">Décrivez votre problème et notre équipe vous répondra dans les plus brefs délais.</p>
+
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+    <div class="form-group {{ form.titre.vars.errors|length > 0 ? 'has-error' : '' }}">
+        {{ form_label(form.titre) }}
+        {{ form_widget(form.titre) }}
+        {% for error in form.titre.vars.errors %}<div class="form-error">{{ error.message }}</div>{% endfor %}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.type) }}
+        {{ form_widget(form.type) }}
+    </div>
+
+    <div class="form-group {{ form.description.vars.errors|length > 0 ? 'has-error' : '' }}">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description) }}
+        {% for error in form.description.vars.errors %}<div class="form-error">{{ error.message }}</div>{% endfor %}
+    </div>
+
+    <div style="background:rgba(255,214,0,0.1);border:1px solid rgba(249,168,37,0.3);border-radius:var(--radius-sm);padding:14px 18px;font-size:0.85rem;color:#475569;margin-bottom:24px;">
+        <i class="fas fa-info-circle" style="color:#F9A825;margin-right:6px;"></i>
+        Votre réclamation sera traitée par notre équipe dans un délai de 48h.
+    </div>
+
+    <div class="form-actions">
+        <a href="{{ path('client_reclamation_index') }}" class="btn btn-outline btn-sm">Annuler</a>
+        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Soumettre</button>
+    </div>
+
+    {{ form_end(form) }}
+</div>
+{% endblock %}

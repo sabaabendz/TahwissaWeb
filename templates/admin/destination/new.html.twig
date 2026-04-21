@@ -1,0 +1,158 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Nouvelle Destination{% endblock %}
+
+{% block content %}
+    <div class="top-bar">
+        <h1><i class="fas fa-plus-circle"></i> Ajouter une destination</h1>
+        <a href="{{ path('admin_destination_index') }}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="form-card">
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        
+        <div class="form-row">
+            <div class="form-group {% if form.nom.vars.errors|length > 0 %}has-error{% endif %}">
+                {{ form_label(form.nom, "Nom de la destination *") }}
+                {{ form_widget(form.nom) }}
+                {{ form_errors(form.nom) }}
+            </div>
+            <div class="form-group {% if form.pays.vars.errors|length > 0 %}has-error{% endif %}">
+                {{ form_label(form.pays, "Pays *") }}
+                {{ form_widget(form.pays) }}
+                {{ form_errors(form.pays) }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.ville, "Ville") }}
+            {{ form_widget(form.ville) }}
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.description, "Description") }}
+            <div class="d-flex gap-2">
+                {{ form_widget(form.description) }}
+                <button type="button" id="generate-description" class="btn btn-secondary" style="background: linear-gradient(135deg, #1565C0, #7C4DFF); white-space: nowrap;">
+                    <i class="fas fa-magic"></i> Générer avec IA
+                </button>
+            </div>
+            {{ form_errors(form.description) }}
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                {{ form_label(form.latitude, "Latitude") }}
+                {{ form_widget(form.latitude) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(form.longitude, "Longitude") }}
+                {{ form_widget(form.longitude) }}
+            </div>
+            <div class="form-group" style="display: flex; align-items: flex-end;">
+                <button type="button" id="geocode-btn" class="btn btn-secondary" style="background: linear-gradient(135deg, #1565C0, #7C4DFF); white-space: nowrap;">
+                    <i class="fas fa-map-marker-alt"></i> Obtenir coordonnées
+                </button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form_label(form.imageUrl, "URL Image") }}
+            {{ form_widget(form.imageUrl) }}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Enregistrer
+            </button>
+            <a href="{{ path('admin_destination_index') }}" class="btn btn-outline">Annuler</a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// --- IA Description ---
+document.getElementById('generate-description')?.addEventListener('click', function() {
+    const nom = document.getElementById('destination_nom').value;
+    const pays = document.getElementById('destination_pays').value;
+    const ville = document.getElementById('destination_ville').value;
+    
+    if (!nom || !pays) {
+        alert('Veuillez remplir le nom et le pays d\'abord');
+        return;
+    }
+    
+    const btn = this;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération...';
+    btn.disabled = true;
+    
+    fetch('/api/gemini/generate-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nom: nom, pays: pays, ville: ville })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('destination_description').value = data.description;
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => alert('Erreur: ' + error))
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+});
+
+// --- Géocodage ---
+document.getElementById('geocode-btn')?.addEventListener('click', function() {
+    const nom = document.getElementById('destination_nom').value;
+    const pays = document.getElementById('destination_pays').value;
+    const ville = document.getElementById('destination_ville').value;
+    
+    let address = nom;
+    if (ville) address += ', ' + ville;
+    address += ', ' + pays;
+    
+    if (!nom || !pays) {
+        alert('Veuillez remplir le nom et le pays d\'abord');
+        return;
+    }
+    
+    const btn = this;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
+    btn.disabled = true;
+    
+    fetch('/api/geocode/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: address })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('destination_latitude').value = data.data.latitude;
+            document.getElementById('destination_longitude').value = data.data.longitude;
+            alert('Coordonnées trouvées !');
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => alert('Erreur: ' + error))
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'client/layout.html.twig' %}
+{% block title %}Mes Réclamations{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+    <div>
+        <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:4px;">
+            <i class="fas fa-flag" style="color:var(--danger);margin-right:8px;"></i>Mes Réclamations
+        </h1>
+        <p style="color:var(--text-muted);">{{ reclamations|length }} réclamation(s) soumise(s)</p>
+    </div>
+    <a href="{{ path('client_reclamation_new') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Nouvelle Réclamation</a>
+</div>
+
+{% if reclamations is empty %}
+    <div class="empty-state" style="background:white;border-radius:var(--radius);padding:60px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
+        <i class="fas fa-flag"></i>
+        <h3>Aucune réclamation</h3>
+        <p>Vous n'avez soumis aucune réclamation pour le moment.</p>
+        <a href="{{ path('client_reclamation_new') }}" class="btn btn-primary btn-sm" style="margin-top:16px;"><i class="fas fa-plus"></i> Soumettre une réclamation</a>
+    </div>
+{% else %}
+    <div style="display:flex;flex-direction:column;gap:16px;">
+        {% for rec in reclamations %}
+        <div style="background:white;border-radius:var(--radius);padding:24px;box-shadow:0 2px 10px rgba(0,0,0,0.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;border-left:4px solid var(--{{ rec.statut == 'TRAITEE' ? 'success' : (rec.statut == 'REJETEE' ? 'danger' : (rec.statut == 'EN_COURS' ? 'info' : 'warning')) }});">
+            <div style="flex:1;min-width:200px;">
+                <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px;">{{ rec.titre }}</div>
+                <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">
+                    <span class="badge badge-info">{{ rec.type ?? 'N/A' }}</span>
+                </div>
+                <div style="font-size:0.82rem;color:#94a3b8;">Soumise le {{ rec.dateCreation ? rec.dateCreation|date('d/m/Y') : 'N/A' }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                <span class="badge badge-{{ rec.statutBadgeClass }}" style="font-size:0.85rem;">{{ rec.statutLabel }}</span>
+                <a href="{{ path('client_reclamation_show', {id: rec.id}) }}" class="btn btn-outline btn-xs"><i class="fas fa-eye"></i> Voir</a>
+                {% if rec.statut == 'EN_ATTENTE' %}
+                <form method="post" action="{{ path('client_reclamation_delete', {id: rec.id}) }}" onsubmit="return confirm('Supprimer cette réclamation ?')">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ rec.id) }}">
+                    <button type="submit" class="btn btn-outline-danger btn-xs"><i class="fas fa-trash"></i></button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'client/layout.html.twig' %}
+{% block title %}Destinations{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:32px;">
+    <h1 style="font-size:2rem;font-weight:800;margin-bottom:8px;">
+        <i class="fas fa-map-marker-alt" style="color:var(--primary);margin-right:10px;"></i> Nos Destinations
+    </h1>
+    <p style="color:var(--text-muted);">Découvrez notre sélection de destinations exceptionnelles à travers le monde</p>
+
+    <form method="get" action="{{ path('client_destination_index') }}" class="search-box" style="margin-top:16px;max-width:400px;">
+        <i class="fas fa-search" style="color:var(--text-muted);"></i>
+        <input type="text" name="search" placeholder="Rechercher une destination par nom ou pays..." value="{{ search }}">
+        <button type="submit" style="background:none;border:none;cursor:pointer;color:var(--primary);font-weight:600;font-size:0.85rem;">OK</button>
+    </form>
+</div>
+
+{% if destinations is empty %}
+    <div class="empty-state">
+        <i class="fas fa-map-marker-alt"></i>
+        <h3>Aucune destination trouvée</h3>
+        <p>Essayez avec d'autres mots-clés ou réinitialisez la recherche.</p>
+        {% if search %}
+            <a href="{{ path('client_destination_index') }}" class="btn btn-outline mt-3">Réinitialiser</a>
+        {% endif %}
+    </div>
+{% else %}
+    <div class="voyage-grid">
+        {% for destination in destinations %}
+        <div class="voyage-card">
+            <div class="voyage-card-image" style="background:linear-gradient(135deg, #1565C0, #7C4DFF);">
+                <i class="fas fa-map-marker-alt" style="font-size:3rem;color:white;opacity:0.9;"></i>
+                <span class="badge badge-primary category-badge">{{ destination.pointsInteret|length }} lieux</span>
+            </div>
+            <div class="voyage-card-body">
+                <h3>{{ destination.nom }}</h3>
+                <div class="destination">
+                    <i class="fas fa-flag"></i> {{ destination.pays }}
+                    {% if destination.ville %} - {{ destination.ville }}{% endif %}
+                </div>
+                <div class="info-row">
+                    <span><i class="fas fa-landmark" style="color:var(--primary);"></i> {{ destination.pointsInteret|length }} points d'intérêt</span>
+                </div>
+                <div class="price">{{ destination.pays }}</div>
+            </div>
+            <div class="voyage-card-footer">
+                <a href="{{ path('client_destination_show', {id: destination.idDestination}) }}" class="btn btn-outline btn-xs">
+                    <i class="fas fa-eye"></i> Détails
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}
