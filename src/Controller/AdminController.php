@@ -612,11 +612,8 @@ class AdminController extends AbstractController
         $users = $qb->getQuery()->getResult();
         $roles = $roleRepository->findAll();
 
-        $stats = [
-            'total' => $userRepository->count([]),
-            'active' => $userRepository->count(['isActive' => true]),
-            'verified' => $userRepository->count(['isVerified' => true]),
-        ];
+        $stats = $userRepository->getGlobalStatistics();
+        $latestUsers = $userRepository->findLatestRegisteredUsers(5);
 
         return $this->render('admin/user/index.html.twig', [
             'users' => $users,
@@ -624,6 +621,7 @@ class AdminController extends AbstractController
             'stats' => $stats,
             'search' => $search,
             'currentRole' => $roleFilter,
+            'latestUsers' => $latestUsers,
         ]);
     }
 

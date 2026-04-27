@@ -186,6 +186,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getAvatarUrl(): ?string
     {
+        if ($this->avatarUrl === null || $this->avatarUrl === '') {
+            return null;
+        }
+
+        if (str_starts_with($this->avatarUrl, '/')) {
+            return $this->avatarUrl;
+        }
+
+        return '/uploads/avatars/' . ltrim($this->avatarUrl, '/');
+    }
+
+    public function getAvatarPath(): ?string
+    {
         return $this->avatarUrl;
     }
 

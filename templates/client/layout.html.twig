@@ -64,6 +64,7 @@ body.dark input, body.dark select, body.dark textarea { background: #0f172a !imp
         <li><a href="{{ path('client_transport_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_transport' ? 'active' : '' }}"><i class="fas fa-bus"></i> Transport</a></li>
         <li><a href="{{ path('client_reservation_transport_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_reservation_transport' ? 'active' : '' }}"><i class="fas fa-calendar-alt"></i> Rés. Transport</a></li>
         <li><a href="{{ path('client_reclamation_index') }}" class="{{ app.request.attributes.get('_route') starts with 'client_reclamation' ? 'active' : '' }}"><i class="fas fa-flag"></i> Réclamations</a></li>
+        <li><a href="{{ path('client_profile') }}" class="{{ app.request.attributes.get('_route') starts with 'client_profile' ? 'active' : '' }}"><i class="fas fa-user-edit"></i> Profil</a></li>
         <li>
             {% if app.user %}
                 <span style="color:#64748b;font-size:0.85rem;padding:8px 12px;">

@@ -27,6 +27,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 
 use App\Service\EvenementGeolocationService;
+use App\Service\EvenementTicketService;
 use App\Service\StripeEvenementPaymentService;
 use App\Service\StripeVoyagePaymentService;
 use App\Service\QRCodeService;
@@ -35,13 +36,59 @@ use App\Service\TravelChatbotService;
 use App\Service\TwilioSmsService;
 use App\Service\EmailNotificationService;
 use App\Service\WeatherService;
+use App\Form\ClientProfileType;
+use App\Service\AvatarUploaderHelper;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 /**
  * CLIENT Controller - Browse voyages and manage own reservations
  */
 #[Route('/client')]
 class ClientController extends AbstractController
 {
+    #[Route('/', name: 'client_profile', methods: ['GET', 'POST'])]
+    public function profile(
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordHasher,
+        AvatarUploaderHelper $avatarUploaderHelper,
+    ): Response {
+        $this->ensureRole($request);
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $form = $this->createForm(ClientProfileType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            /** @var UploadedFile|null $avatarFile */
+            $avatarFile = $form->get('avatarFile')->getData();
+            if ($avatarFile instanceof UploadedFile) {
+                try {
+                    $avatarPath = $avatarUploaderHelper->upload($avatarFile, (int) $user->getId());
+                    $user->setAvatarUrl($avatarPath);
+                } catch (\RuntimeException) {
+                    $this->addFlash('warning', 'La photo de profil n\'a pas pu etre mise a jour.');
+                }
+            }
+
+            $plainPassword = trim((string) $form->get('plainPassword')->getData());
+            if ($plainPassword !== '') {
+                $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+            }
+
+            $em->flush();
+            $this->addFlash('success', 'Vos informations ont ete mises a jour avec succes.');
+
+            return $this->redirectToRoute('client_profile');
+        }
+
+        return $this->render('client/profile/index.html.twig', [
+            'profileForm' => $form->createView(),
+        ]);
+    }
+
     // ===================== VOYAGES (Read only - Catalogue) =====================
 
     #[Route('/voyage', name: 'client_voyage_index')]
@@ -617,6 +664,7 @@ public function voyageReact(
     public function reservationEvenementPaymentSuccess(
         Request $request,
         StripeEvenementPaymentService $stripeEvenementPayment,
+        ReservationEvenementRepository $reservationEvenementRepo,
     ): Response {
         $this->ensureRole($request);
         $sessionId = $request->query->get('session_id');
@@ -625,14 +673,51 @@ public function voyageReact(
             return $this->redirectToRoute('client_reservation_evenement_index');
         }
 
-        $userId = (int) $request->getSession()->get('user_id', 0);
-        if ($stripeEvenementPayment->fulfillFromCheckoutSessionId($sessionId, $userId)) {
+        $userId    = (int) $request->getSession()->get('user_id', 0);
+        $fulfilled = $stripeEvenementPayment->fulfillFromCheckoutSessionId($sessionId, $userId);
+
+        if ($fulfilled) {
+            // Redirect directly to the ticket PDF download — the user paid, give them their ticket immediately.
+            $reservation = $reservationEvenementRepo->findOneBy(['stripeCheckoutSessionId' => $sessionId]);
+            if ($reservation instanceof ReservationEvenement && $reservation->getStatut() === 'CONFIRMEE') {
+                $this->addFlash('success', 'Paiement confirmé ! Votre billet est en cours de téléchargement.');
+                return $this->redirectToRoute('client_reservation_evenement_ticket', ['id' => $reservation->getId()]);
+            }
             $this->addFlash('success', 'Paiement confirmé — votre réservation est enregistrée.');
         } else {
             $this->addFlash('info', 'Si le paiement vient d\'être effectué, la confirmation peut prendre quelques secondes. Vérifiez vos réservations.');
         }
 
         return $this->redirectToRoute('client_reservation_evenement_index');
+    }
+
+    #[Route('/reservation-evenement/{id}/ticket', name: 'client_reservation_evenement_ticket', requirements: ['id' => '\d+'])]
+    public function reservationEvenementTicket(
+        Request $request,
+        ReservationEvenement $reservation,
+        EvenementTicketService $ticketService,
+    ): Response {
+        $this->ensureRole($request);
+        $userId = (int) $request->getSession()->get('user_id', 0);
+
+        if ($reservation->getIdUser() !== $userId) {
+            $this->addFlash('danger', 'Accès refusé.');
+            return $this->redirectToRoute('client_reservation_evenement_index');
+        }
+
+        if ($reservation->getStatut() !== 'CONFIRMEE') {
+            $this->addFlash('warning', 'Le billet n\'est disponible que pour les réservations confirmées.');
+            return $this->redirectToRoute('client_reservation_evenement_show', ['id' => $reservation->getId()]);
+        }
+
+        $pdf      = $ticketService->generatePdf($reservation);
+        $filename = $ticketService->buildFilename($reservation);
+
+        return new Response($pdf, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control'       => 'private, no-store',
+        ]);
     }
 
     #[Route('/reservation-evenement/paiement/annule/{id}', name: 'client_reservation_evenement_payment_cancel', requirements: ['id' => '\d+'])]

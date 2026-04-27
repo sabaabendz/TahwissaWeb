@@ -1,0 +1,310 @@
+{#
+  Reusable weather widget for the Evenement form.
+
+  Enhances the date field (Symfony id="evenement_dateEvent") with a Flatpickr calendar.
+  When a date **and** a location (id="evenement_lieu") are both filled in, it fetches
+  weather data from /api/weather (Open-Meteo, free, no API key) and displays it
+  in a compact card below the date/time row.
+
+  Dependencies (loaded from CDN, no build step required):
+    - Flatpickr 4.x  – https://flatpickr.js.org/
+    - Font Awesome 6  – already loaded in base.html.twig
+#}
+
+{# ── Flatpickr styles ─────────────────────────────────────────────────────── #}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+  /* Align Flatpickr visuals with the project's design tokens */
+  .flatpickr-calendar {
+    font-family: 'Poppins', sans-serif;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.15);
+  }
+  .flatpickr-day.selected,
+  .flatpickr-day.selected:hover {
+    background: var(--primary, #5a7fd4);
+    border-color: var(--primary, #5a7fd4);
+  }
+  .flatpickr-day:hover {
+    background: var(--light, #f0f4ff);
+  }
+
+  /* Weather widget card */
+  #weather-widget {
+    margin-top: 1.25rem;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(90,127,212,.2);
+    background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%);
+    transition: all .3s ease;
+  }
+  .weather-card-header {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .75rem 1rem;
+    background: var(--primary, #5a7fd4);
+    color: #fff;
+    font-weight: 600;
+    font-size: .85rem;
+  }
+  .weather-card-body {
+    padding: 1rem 1.25rem;
+  }
+  .weather-main {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+  }
+  .weather-icon-wrap {
+    font-size: 2.8rem;
+    line-height: 1;
+    color: var(--primary, #5a7fd4);
+  }
+  .weather-temp {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1;
+  }
+  .weather-temp span {
+    font-size: .95rem;
+    font-weight: 400;
+    color: var(--text-muted, #888);
+  }
+  .weather-desc {
+    font-size: .9rem;
+    color: var(--text-muted, #888);
+    margin-top: .2rem;
+  }
+  .weather-stats {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-top: .85rem;
+    padding-top: .75rem;
+    border-top: 1px solid rgba(90,127,212,.1);
+    font-size: .82rem;
+    color: var(--text-muted, #888);
+  }
+  .weather-stat {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+  }
+  .weather-stat i {
+    color: var(--primary, #5a7fd4);
+    width: 14px;
+    text-align: center;
+  }
+  .weather-source {
+    margin-top: .6rem;
+    font-size: .72rem;
+    color: #bbb;
+    text-align: right;
+  }
+  .weather-source a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .weather-source a:hover { text-decoration: underline; }
+
+  /* Loading / error states */
+  .weather-loading,
+  .weather-error {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .9rem 1.25rem;
+    font-size: .85rem;
+    color: var(--text-muted, #888);
+  }
+  .weather-error { color: #c0392b; }
+  .fa-spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+{# ── Weather card markup ───────────────────────────────────────────────────── #}
+<div id="weather-widget" style="display:none;" role="status" aria-live="polite">
+
+  {# Loading #}
+  <div id="weather-loading" class="weather-loading" style="display:none;">
+    <i class="fas fa-spinner fa-spin"></i>
+    Récupération de la météo via Open-Meteo…
+  </div>
+
+  {# Error #}
+  <div id="weather-error" class="weather-error" style="display:none;">
+    <i class="fas fa-exclamation-circle"></i>
+    <span id="weather-error-msg">Météo indisponible.</span>
+  </div>
+
+  {# Data #}
+  <div id="weather-data" style="display:none;">
+    <div class="weather-card-header">
+      <i class="fas fa-cloud-sun"></i>
+      <span id="weather-header-label">Météo prévue le <strong id="weather-date-label"></strong></span>
+    </div>
+    <div class="weather-card-body">
+      <div class="weather-main">
+        <div class="weather-icon-wrap">
+          <i class="fas" id="weather-icon"></i>
+        </div>
+        <div>
+          <div class="weather-temp">
+            <span id="weather-temp-max"></span>°C
+            <span>/ <span id="weather-temp-min"></span>°C</span>
+          </div>
+          <div class="weather-desc" id="weather-description"></div>
+        </div>
+      </div>
+      <div class="weather-stats">
+        <div class="weather-stat">
+          <i class="fas fa-wind"></i>
+          <span>Vent : <strong id="weather-wind"></strong> km/h</span>
+        </div>
+        <div class="weather-stat">
+          <i class="fas fa-tint"></i>
+          <span>Précipitations : <strong id="weather-precipitation"></strong> mm</span>
+        </div>
+        <div class="weather-stat" id="weather-location-stat">
+          <i class="fas fa-map-marker-alt"></i>
+          <span id="weather-location-name"></span>
+        </div>
+      </div>
+      <div class="weather-source">
+        Données : <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{# ── Flatpickr + weather fetch scripts ────────────────────────────────────── #}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const WEATHER_API = '{{ path('api_weather_forecast') }}';
+
+  // ── DOM refs ────────────────────────────────────────────────────────────
+  const dateInput   = document.getElementById('evenement_dateEvent');
+  const lieuInput   = document.getElementById('evenement_lieu');
+  const widget      = document.getElementById('weather-widget');
+  const elLoading   = document.getElementById('weather-loading');
+  const elError     = document.getElementById('weather-error');
+  const elErrorMsg  = document.getElementById('weather-error-msg');
+  const elData      = document.getElementById('weather-data');
+
+  if (!dateInput || !lieuInput) return; // guard: not on an Evenement form
+
+  // ── Flatpickr calendar ──────────────────────────────────────────────────
+  flatpickr(dateInput, {
+    locale: 'fr',
+    dateFormat: 'Y-m-d',          // matches Symfony DateType single_text format
+    altInput: true,                // show friendly date to the user…
+    altFormat: 'l j F Y',         // …while keeping YYYY-MM-DD in the real input
+    allowInput: true,
+    onChange: function (selectedDates, dateStr) {
+      if (dateStr) {
+        scheduleWeatherFetch();
+      }
+    },
+  });
+
+  // ── Weather fetch logic ─────────────────────────────────────────────────
+  let debounceTimer = null;
+
+  function scheduleWeatherFetch() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(fetchWeather, 600);
+  }
+
+  async function fetchWeather() {
+    const date = dateInput.value.trim();
+    const lieu = lieuInput.value.trim();
+
+    if (!date || !lieu) {
+      hide(widget);
+      return;
+    }
+
+    showState('loading');
+
+    const url = new URL(WEATHER_API, window.location.origin);
+    url.searchParams.set('lieu', lieu);
+    url.searchParams.set('date', date);
+
+    try {
+      const response = await fetch(url.toString(), {
+        headers: { 'Accept': 'application/json' },
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok) {
+        showError(payload.error ?? 'Erreur inconnue.');
+        return;
+      }
+
+      renderWeather(payload);
+    } catch (err) {
+      showError('Impossible de contacter le service météo.');
+    }
+  }
+
+  function renderWeather(payload) {
+    const w = payload.weather;
+    const loc = payload.location;
+
+    // Friendly date label (e.g. "15 mai 2026")
+    const d = new Date(w.date + 'T12:00:00');
+    const label = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    document.getElementById('weather-date-label').textContent  = label;
+    document.getElementById('weather-icon').className          = 'fas ' + w.icon;
+    document.getElementById('weather-temp-max').textContent    = w.tempMax !== null ? Math.round(w.tempMax) : '–';
+    document.getElementById('weather-temp-min').textContent    = w.tempMin !== null ? Math.round(w.tempMin) : '–';
+    document.getElementById('weather-description').textContent = w.description;
+    document.getElementById('weather-wind').textContent        = Math.round(w.windspeed);
+    document.getElementById('weather-precipitation').textContent = (w.precipitation ?? 0).toFixed(1);
+
+    // Location: show just the first comma-separated segment (city name)
+    const cityShort = (loc.city || '').split(',')[0].trim();
+    document.getElementById('weather-location-name').textContent = cityShort;
+
+    showState('data');
+  }
+
+  // ── State helpers ───────────────────────────────────────────────────────
+  function showState(state) {
+    show(widget);
+    hide(elLoading);
+    hide(elError);
+    hide(elData);
+
+    if (state === 'loading') show(elLoading);
+    if (state === 'error')   show(elError);
+    if (state === 'data')    show(elData);
+  }
+
+  function showError(msg) {
+    elErrorMsg.textContent = msg;
+    showState('error');
+  }
+
+  function show(el) { if (el) el.style.display = ''; }
+  function hide(el) { if (el) el.style.display = 'none'; }
+
+  // ── Trigger on lieu change (debounced) ──────────────────────────────────
+  lieuInput.addEventListener('input', scheduleWeatherFetch);
+
+  // ── Auto-trigger on page load for edit forms (pre-filled values) ────────
+  if (dateInput.value && lieuInput.value) {
+    fetchWeather();
+  }
+}());
+</script>

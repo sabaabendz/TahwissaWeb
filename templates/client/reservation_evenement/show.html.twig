@@ -68,6 +68,19 @@
     </div>
     {% endif %}
 
+    {% if reservation.statut == 'CONFIRMEE' %}
+    <div style="margin-top:24px;padding-top:24px;border-top:2px solid #f1f5f9;">
+        <a href="{{ path('client_reservation_evenement_ticket', {id: reservation.id}) }}"
+           class="btn btn-primary btn-sm"
+           style="display:inline-flex;align-items:center;gap:8px;font-weight:700;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;padding:10px 20px;border-radius:8px;color:#fff;text-decoration:none;box-shadow:0 4px 12px rgba(79,70,229,.3);">
+            <i class="fas fa-ticket-alt"></i> Télécharger mon Billet (PDF)
+        </a>
+        <p style="margin-top:8px;font-size:0.78rem;color:var(--text-muted);">
+            <i class="fas fa-info-circle"></i> Un billet PDF avec QR code sera téléchargé — présentez-le à l'entrée.
+        </p>
+    </div>
+    {% endif %}
+
     {% if reservation.statut == 'EN_ATTENTE' %}
     <div style="margin-top:24px;padding-top:24px;border-top:2px solid #f1f5f9;">
         <form method="post" action="{{ path('client_reservation_evenement_cancel', {id: reservation.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')">
