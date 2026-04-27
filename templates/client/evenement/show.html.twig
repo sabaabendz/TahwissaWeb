@@ -65,6 +65,59 @@
 
     {% include 'partials/evenement_map_section.html.twig' %}
 
+    {# ── Météo prévue ── #}
+    {% if evenement.lieu and evenement.dateEvent %}
+    <div id="weather-show-widget" style="margin-top:24px;border-radius:12px;overflow:hidden;border:1px solid rgba(90,127,212,.2);background:linear-gradient(135deg,#f0f4ff 0%,#ffffff 100%);">
+        <div style="display:flex;align-items:center;gap:.6rem;padding:.75rem 1rem;background:var(--primary,#5a7fd4);color:#fff;font-weight:600;font-size:.85rem;">
+            <i class="fas fa-cloud-sun"></i>
+            <span>Météo prévue — {{ evenement.lieu }}</span>
+        </div>
+        <div id="weather-show-body" style="padding:1rem 1.25rem;">
+            <div style="display:flex;align-items:center;gap:.6rem;font-size:.85rem;color:var(--text-muted,#888);">
+                <i class="fas fa-spinner fa-spin"></i> Chargement de la météo…
+            </div>
+        </div>
+    </div>
+    <script>
+    (function() {
+        const body = document.getElementById('weather-show-body');
+        const lieu = {{ evenement.lieu|json_encode|raw }};
+        const date = {{ evenement.dateEvent|date('Y-m-d')|json_encode|raw }};
+        const url = '/api/weather?lieu=' + encodeURIComponent(lieu) + '&date=' + encodeURIComponent(date);
+
+        fetch(url, {headers:{'Accept':'application/json'}})
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    body.innerHTML = '<div style="color:#c0392b;font-size:.85rem;"><i class="fas fa-exclamation-circle"></i> ' + data.error + '</div>';
+                    return;
+                }
+                const w = data.weather;
+                const d = new Date(w.date + 'T12:00:00');
+                const label = d.toLocaleDateString('fr-FR', {day:'numeric',month:'long',year:'numeric'});
+                body.innerHTML = `
+                    <div style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;">
+                        <div style="font-size:2.8rem;color:var(--primary,#5a7fd4);"><i class="fas ${w.icon}"></i></div>
+                        <div>
+                            <div style="font-size:1.5rem;font-weight:700;color:#1a1a2e;">${Math.round(w.tempMax)}°C <span style="font-size:.95rem;font-weight:400;color:#888;">/ ${Math.round(w.tempMin)}°C</span></div>
+                            <div style="font-size:.9rem;color:#888;">${w.description}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:1.25rem;flex-wrap:wrap;margin-top:.85rem;padding-top:.75rem;border-top:1px solid rgba(90,127,212,.1);font-size:.82rem;color:#888;">
+                        <div><i class="fas fa-wind" style="color:var(--primary,#5a7fd4);margin-right:4px;"></i> Vent : <strong>${Math.round(w.windspeed)}</strong> km/h</div>
+                        <div><i class="fas fa-tint" style="color:var(--primary,#5a7fd4);margin-right:4px;"></i> Précipitations : <strong>${(w.precipitation||0).toFixed(1)}</strong> mm</div>
+                        <div><i class="fas fa-calendar-day" style="color:var(--primary,#5a7fd4);margin-right:4px;"></i> ${label}</div>
+                    </div>
+                    <div style="margin-top:.6rem;font-size:.72rem;color:#bbb;text-align:right;">Données : <a href="https://open-meteo.com/" target="_blank" style="color:inherit;">Open-Meteo</a></div>
+                `;
+            })
+            .catch(() => {
+                body.innerHTML = '<div style="color:#c0392b;font-size:.85rem;"><i class="fas fa-exclamation-circle"></i> Météo indisponible.</div>';
+            });
+    }());
+    </script>
+    {% endif %}
+
     <div style="margin-top:32px;text-align:center;">
         {% if evenement.statut == 'DISPONIBLE' and evenement.nbPlaces > 0 %}
             <a href="{{ path('client_reservation_evenement_new', {evenementId: evenement.id}) }}" class="btn btn-primary" style="font-size:1rem;padding:14px 40px;">

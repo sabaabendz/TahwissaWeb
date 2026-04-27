@@ -1,0 +1,310 @@
+{% extends 'client/layout.html.twig' %}
+
+{% block content %}
+<style>
+    .profile-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        position: relative;
+        max-width: 820px;
+        margin: 0 auto;
+    }
+
+    .profile-edit-trigger {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        width: 42px;
+        height: 42px;
+        border: none;
+        border-radius: 50%;
+        background: #eff6ff;
+        color: #1d4ed8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.18s ease, background 0.18s ease;
+    }
+
+    .profile-edit-trigger:hover {
+        background: #dbeafe;
+        transform: translateY(-1px);
+    }
+
+    .profile-header {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-right: 58px;
+    }
+
+    .profile-avatar {
+        width: 84px;
+        height: 84px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: #f1f5f9;
+        border: 3px solid #e2e8f0;
+    }
+
+    .profile-name {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .profile-email {
+        margin: 4px 0 0;
+        color: #64748b;
+        font-size: 0.96rem;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .profile-item {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px;
+        background: #f8fafc;
+    }
+
+    .profile-item .label {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-bottom: 5px;
+    }
+
+    .profile-item .value {
+        font-size: 0.95rem;
+        color: #0f172a;
+        font-weight: 600;
+        word-break: break-word;
+    }
+
+    .profile-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1200;
+        padding: 16px;
+    }
+
+    .profile-modal.open {
+        display: flex;
+    }
+
+    .profile-modal-panel {
+        width: 100%;
+        max-width: 700px;
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 22px;
+        box-shadow: 0 20px 55px rgba(2, 6, 23, 0.3);
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .profile-modal-title {
+        margin: 0 0 14px;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .profile-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 14px;
+    }
+
+    .profile-form-grid .full {
+        grid-column: span 2;
+    }
+
+    .password-section {
+        margin-top: 8px;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 12px;
+    }
+
+    .password-section-title {
+        margin: 0 0 8px;
+        font-size: 0.9rem;
+        color: #334155;
+        font-weight: 700;
+    }
+
+    .profile-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    .btn-cancel,
+    .btn-save {
+        border: none;
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .btn-cancel {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .btn-save {
+        background: #2563eb;
+        color: #ffffff;
+    }
+
+    @media (max-width: 760px) {
+        .profile-grid,
+        .profile-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-form-grid .full {
+            grid-column: span 1;
+        }
+    }
+
+    body.dark .profile-card,
+    body.dark .profile-modal-panel {
+        background: #1e293b;
+    }
+
+    body.dark .profile-name,
+    body.dark .profile-item .value,
+    body.dark .profile-modal-title {
+        color: #f1f5f9;
+    }
+
+    body.dark .profile-item {
+        background: #0f172a;
+        border-color: #334155;
+    }
+
+    body.dark .password-section {
+        border-top-color: #334155;
+    }
+
+    body.dark .password-section-title {
+        color: #cbd5e1;
+    }
+
+    body.dark .btn-cancel {
+        background: #334155;
+        color: #e2e8f0;
+    }
+</style>
+
+<div class="profile-card">
+    <button type="button" class="profile-edit-trigger" id="open-profile-modal" title="Edit profile">
+        <i class="fas fa-pencil-alt"></i>
+    </button>
+
+    <div class="profile-header">
+        {% if app.user and app.user.avatarUrl %}
+            <img src="{{ app.user.avatarUrl }}" alt="Avatar" class="profile-avatar">
+        {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ app.user ? app.user.name|url_encode : 'User' }}&background=2563eb&color=fff" alt="Avatar" class="profile-avatar">
+        {% endif %}
+
+        <div>
+            <h2 class="profile-name">{{ app.user ? app.user.name : 'Client' }}</h2>
+            <p class="profile-email">{{ app.user ? app.user.email : '-' }}</p>
+        </div>
+    </div>
+
+    <div class="profile-grid">
+        <div class="profile-item">
+            <div class="label">First name</div>
+            <div class="value">{{ app.user and app.user.firstName ? app.user.firstName : '-' }}</div>
+        </div>
+        <div class="profile-item">
+            <div class="label">Last name</div>
+            <div class="value">{{ app.user and app.user.lastName ? app.user.lastName : '-' }}</div>
+        </div>
+        <div class="profile-item">
+            <div class="label">Email</div>
+            <div class="value">{{ app.user ? app.user.email : '-' }}</div>
+        </div>
+        <div class="profile-item">
+            <div class="label">Phone number</div>
+            <div class="value">{{ app.user and app.user.phone ? app.user.phone : '-' }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="profile-modal" id="profile-modal" aria-hidden="true">
+    <div class="profile-modal-panel">
+        <h3 class="profile-modal-title">Edit profile</h3>
+
+        {{ form_start(profileForm) }}
+            <div class="profile-form-grid">
+                <div>{{ form_row(profileForm.firstName) }}</div>
+                <div>{{ form_row(profileForm.lastName) }}</div>
+                <div class="full">{{ form_row(profileForm.email) }}</div>
+                <div class="full">{{ form_row(profileForm.phone) }}</div>
+                <div class="full">{{ form_row(profileForm.avatarFile) }}</div>
+            </div>
+
+            <div class="password-section">
+                <p class="password-section-title">Password change (optional)</p>
+                {{ form_row(profileForm.plainPassword) }}
+            </div>
+
+            <div class="profile-actions">
+                <button type="button" class="btn-cancel" id="cancel-profile-modal">Cancel</button>
+                <button type="submit" class="btn-save">Save</button>
+            </div>
+        {{ form_end(profileForm) }}
+    </div>
+</div>
+
+<script>
+    (function () {
+        const modal = document.getElementById('profile-modal');
+        const openBtn = document.getElementById('open-profile-modal');
+        const cancelBtn = document.getElementById('cancel-profile-modal');
+
+        if (!modal || !openBtn || !cancelBtn) {
+            return;
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        function openModal() {
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+
+        openBtn.addEventListener('click', openModal);
+        cancelBtn.addEventListener('click', closeModal);
+
+        modal.addEventListener('click', function (event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+    })();
+</script>
+{% endblock %}

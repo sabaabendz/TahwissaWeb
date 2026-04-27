@@ -19,16 +19,32 @@ class NominatimGeocoder
 
     public function geocode(string $address): ?array
     {
+        return $this->search($address, false);
+    }
+
+    /**
+     * Search for a location using Nominatim.
+     *
+     * @param string $query         The search query (address, city, etc.)
+     * @param bool   $withCountryBias If true, restrict results to the configured country codes
+     */
+    public function search(string $query, bool $withCountryBias = false): ?array
+    {
         $url = 'https://nominatim.openstreetmap.org/search';
-        
+
+        $queryParams = [
+            'q' => $query,
+            'format' => 'json',
+            'limit' => 1,
+            'addressdetails' => 1,
+        ];
+
+        if ($withCountryBias && $this->defaultCountryCodes) {
+            $queryParams['countrycodes'] = $this->defaultCountryCodes;
+        }
+
         $response = $this->httpClient->request('GET', $url, [
-            'query' => [
-                'q' => $address,
-                'format' => 'json',
-                'limit' => 1,
-                'addressdetails' => 1,
-                // 'countrycodes' => $this->defaultCountryCodes,  // Commenté pour permettre la recherche dans tous les pays
-            ],
+            'query' => $queryParams,
             'headers' => [
                 'User-Agent' => $this->appUserAgent,
             ]

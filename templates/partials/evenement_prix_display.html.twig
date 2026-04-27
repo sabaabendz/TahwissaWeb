@@ -4,12 +4,12 @@
     <div style="text-align:right;">
         {% if evenement.hasPromo %}
             <div style="font-size:0.95rem;color:var(--text-muted);margin-bottom:4px;">
-                <span style="text-decoration:line-through;">{{ evenement.prix|number_format(2, ',', ' ') }} TND</span>
+                <span style="text-decoration:line-through;">{{ (currencyService.convertPrice(evenement.prix))|number_format(2, ',', ' ') }} {{ currencyService.getCurrencySymbol() }}</span>
                 <span class="badge badge-success" style="margin-left:6px;">-{{ evenement.promoPercent }}%</span>
             </div>
-            <div style="font-size:{{ fs }};font-weight:800;color:var(--primary);">{{ evenement.prixFinal|number_format(2, ',', ' ') }} TND</div>
+            <div style="font-size:{{ fs }};font-weight:800;color:var(--primary);">{{ (currencyService.convertPrice(evenement.prixFinal))|number_format(2, ',', ' ') }} {{ currencyService.getCurrencySymbol() }}</div>
         {% else %}
-            <div style="font-size:{{ fs }};font-weight:800;color:var(--primary);">{{ evenement.prix|number_format(2, ',', ' ') }} TND</div>
+            <div style="font-size:{{ fs }};font-weight:800;color:var(--primary);">{{ (currencyService.convertPrice(evenement.prix))|number_format(2, ',', ' ') }} {{ currencyService.getCurrencySymbol() }}</div>
         {% endif %}
         {% if sublabel is defined and sublabel %}
             <div style="font-size:0.85rem;color:var(--text-muted);">{{ sublabel }}</div>
@@ -18,28 +18,28 @@
 {% elseif variant == 'card' %}
     <div class="price">
         {% if evenement.hasPromo %}
-            <span style="text-decoration:line-through;opacity:0.75;font-size:0.88em;">{{ evenement.prix|number_format(2, ',', ' ') }} TND</span>
+            <span style="text-decoration:line-through;opacity:0.75;font-size:0.88em;">{{ (currencyService.convertPrice(evenement.prix))|number_format(2, ',', ' ') }} {{ currencyService.getCurrencySymbol() }}</span>
             <span class="badge badge-success" style="font-size:0.65rem;vertical-align:middle;margin-left:4px;">-{{ evenement.promoPercent }}%</span><br>
-            <strong style="color:var(--primary);">{{ evenement.prixFinal|number_format(2, ',', ' ') }} TND</strong>
+            <strong style="color:var(--primary);">{{ (currencyService.convertPrice(evenement.prixFinal))|number_format(2, ',', ' ') }} {{ currencyService.getCurrencySymbol() }}</strong>
         {% else %}
-            {{ evenement.prix|number_format(2, ',', ' ') }} TND
+            {{ (currencyService.convertPrice(evenement.prix))|number_format(2, ',', ' ') }} {{ currencyService.getCurrencySymbol() }}
         {% endif %}
     </div>
 {% elseif variant == 'cell' %}
     {% if evenement.hasPromo %}
-        <span style="text-decoration:line-through;opacity:0.75;font-size:0.8em;display:block;">{{ evenement.prix|number_format(2, ',', ' ') }}</span>
+        <span style="text-decoration:line-through;opacity:0.75;font-size:0.8em;display:block;">{{ (currencyService.convertPrice(evenement.prix))|number_format(2, ',', ' ') }}</span>
         <span class="badge badge-success" style="font-size:0.65rem;">-{{ evenement.promoPercent }}%</span>
-        <strong>{{ evenement.prixFinal|number_format(2, ',', ' ') }} TND</strong>
+        <strong>{{ (currencyService.convertPrice(evenement.prixFinal))|number_format(2, ',', ' ') }} {{ currencyService.getCurrencySymbol() }}</strong>
     {% else %}
-        {{ evenement.prix|number_format(2, ',', ' ') }} TND
+        {{ (currencyService.convertPrice(evenement.prix))|number_format(2, ',', ' ') }} {{ currencyService.getCurrencySymbol() }}
     {% endif %}
 {% elseif variant == 'button' %}
-    Réserver ma place — {{ evenement.hasPromo ? evenement.prixFinal|number_format(2, ',', ' ') : evenement.prix|number_format(2, ',', ' ') }} TND
+    Réserver ma place — {{ (currencyService.convertPrice(evenement.hasPromo ? evenement.prixFinal : evenement.prix))|number_format(2, ',', ' ') }} {{ currencyService.getCurrencySymbol() }}
 {% elseif variant == 'detail_grid' %}
     {% if evenement.hasPromo %}
-        <div style="font-weight:600;color:var(--text-muted);text-decoration:line-through;font-size:0.9rem;">{{ evenement.prix|number_format(2, ',', ' ') }} TND</div>
-        <div style="font-weight:700;color:var(--primary);">{{ evenement.prixFinal|number_format(2, ',', ' ') }} TND <span class="badge badge-success" style="font-size:0.65rem;">-{{ evenement.promoPercent }}%</span></div>
+        <div style="font-weight:600;color:var(--text-muted);text-decoration:line-through;font-size:0.9rem;">{{ (currencyService.convertPrice(evenement.prix))|number_format(2, ',', ' ') }} {{ currencyService.getCurrencySymbol() }}</div>
+        <div style="font-weight:700;color:var(--primary);">{{ (currencyService.convertPrice(evenement.prixFinal))|number_format(2, ',', ' ') }} {{ currencyService.getCurrencySymbol() }} <span class="badge badge-success" style="font-size:0.65rem;">-{{ evenement.promoPercent }}%</span></div>
     {% else %}
-        <div style="font-weight:700;color:var(--primary);">{{ evenement.prix|number_format(2, ',', ' ') }} TND</div>
+        <div style="font-weight:700;color:var(--primary);">{{ (currencyService.convertPrice(evenement.prix))|number_format(2, ',', ' ') }} {{ currencyService.getCurrencySymbol() }}</div>
     {% endif %}
 {% endif %}

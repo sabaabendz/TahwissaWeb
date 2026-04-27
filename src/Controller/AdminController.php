@@ -412,6 +412,16 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('admin_evenement_index');
     }
 
+    #[Route('/evenement/{id}/pdf', name: 'admin_evenement_pdf', requirements: ['id' => '\d+'])]
+    public function evenementPdf(Request $request, Evenement $evenement): Response
+    {
+        $this->checkRole($request, 'ADMIN');
+
+        return $this->render('pdf/evenement.html.twig', [
+            'evenement' => $evenement,
+        ]);
+    }
+
     // ===================== RECLAMATION CRUD =====================
 
     #[Route('/reclamation', name: 'admin_reclamation_index')]
@@ -612,11 +622,8 @@ class AdminController extends AbstractController
         $users = $qb->getQuery()->getResult();
         $roles = $roleRepository->findAll();
 
-        $stats = [
-            'total' => $userRepository->count([]),
-            'active' => $userRepository->count(['isActive' => true]),
-            'verified' => $userRepository->count(['isVerified' => true]),
-        ];
+        $stats = $userRepository->getGlobalStatistics();
+        $latestUsers = $userRepository->findLatestRegisteredUsers(5);
 
         return $this->render('admin/user/index.html.twig', [
             'users' => $users,
@@ -624,6 +631,7 @@ class AdminController extends AbstractController
             'stats' => $stats,
             'search' => $search,
             'currentRole' => $roleFilter,
+            'latestUsers' => $latestUsers,
         ]);
     }
 

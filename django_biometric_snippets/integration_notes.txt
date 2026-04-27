@@ -1,0 +1,23 @@
+Integration target chosen: registration page.
+
+1) Include URL routes in your project urls.py:
+   path('', include('your_app.urls'))
+
+2) Protect registration view with the decorator:
+   from .views import require_human_verification
+
+   @require_human_verification
+   def register(request):
+       ...
+
+3) Optional: protect login instead by applying the same decorator to login view.
+
+4) If user is already verified (session['human_verified'] == True), verification is skipped.
+
+5) Safe subprocess call rules used:
+   - shell=False
+   - command as list [sys.executable, script_path, 'webcam']
+   - timeout set
+   - capture_output + strict JSON parsing
+   - explicit cwd=BASE_DIR
+   - clear error handling for timeout/missing script/invalid output

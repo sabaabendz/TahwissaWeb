@@ -39,7 +39,7 @@
                 {% for r in reservations %}
                 <tr>
                     <td style="font-weight:600;color:var(--text-muted);">#{{ r.id }}</td>
-                    <td>{{ usersById[r.idUtilisateur] is defined ? usersById[r.idUtilisateur].name : 'User #' ~ r.idUtilisateur }}</td>
+                    <td>{{ usersById[r.idUtilisateur|default(0)] is defined ? usersById[r.idUtilisateur|default(0)].name : 'User #' ~ r.idUtilisateur }}</td>
                     <td>{% if r.voyage %}<i class="fas fa-plane" style="color:var(--primary);"></i> {{ r.voyage.titre }}{% else %}N/A{% endif %}</td>
                     <td>{{ r.dateReservation ? r.dateReservation|date('d/m/Y') : '-' }}</td>
                     <td>{{ r.nbrPersonnes }}</td>

@@ -8,11 +8,13 @@ use Karser\Recaptcha3Bundle\Validator\Constraints\Recaptcha3;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -80,6 +82,23 @@ class RegistrationFormType extends AbstractType
                 ],
                 'label' => 'Téléphone',
                 'required' => false,
+            ])
+            ->add('avatarFile', FileType::class, [
+                'mapped' => false,
+                'required' => false,
+                'label' => 'Photo de profil (optionnel)',
+                'attr' => [
+                    'class' => 'form-control',
+                    'accept' => 'image/jpeg,image/png,image/gif',
+                ],
+                'constraints' => [
+                    new Image([
+                        'maxSize' => '2M',
+                        'mimeTypes' => ['image/jpeg', 'image/png', 'image/gif'],
+                        'mimeTypesMessage' => 'Veuillez sélectionner une image valide (JPG, PNG ou GIF).',
+                        'maxSizeMessage' => 'La taille maximale autorisée est de 2MB.',
+                    ]),
+                ],
             ])
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Billet {{ ticketNumber }}</title>
+<style>
+/* ── Reset ─────────────────────────────────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'DejaVu Sans', Arial, sans-serif;
+    font-size: 11px;
+    color: #1e1b4b;
+    background: #f4f4f8;
+}
+
+/* ── Page wrapper ────────────────────────────────────── */
+.page {
+    padding: 28px 32px;
+}
+
+/* ── Ticket shell ────────────────────────────────────── */
+.ticket {
+    background: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(30,27,75,.15);
+}
+
+/* ── Header band ─────────────────────────────────────── */
+.ticket-header {
+    background: #1e1b4b;
+    padding: 0;
+}
+
+.header-inner {
+    padding: 20px 28px 18px;
+}
+
+.brand-row {
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.brand-name {
+    font-size: 22px;
+    font-weight: 900;
+    color: #f59e0b;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.brand-tagline {
+    font-size: 9px;
+    color: #a5b4fc;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 1px;
+}
+
+.ticket-label {
+    font-size: 10px;
+    color: #818cf8;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: right;
+    padding-top: 4px;
+}
+
+.ticket-number-top {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    text-align: right;
+}
+
+/* ── Event title band ─────────────────────────────────── */
+.event-band {
+    background: #312e81;
+    padding: 14px 28px 14px;
+}
+
+.event-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: .5px;
+}
+
+.event-category {
+    font-size: 10px;
+    color: #a5b4fc;
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ── Accent bar ──────────────────────────────────────── */
+.accent-bar {
+    height: 4px;
+    background: #f59e0b;
+}
+
+/* ── Main body ───────────────────────────────────────── */
+.ticket-body {
+    padding: 0;
+}
+
+.body-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Left column */
+.col-info {
+    padding: 22px 24px 22px 28px;
+    vertical-align: top;
+    width: 62%;
+}
+
+/* Right column (QR) */
+.col-qr {
+    padding: 22px 28px 22px 12px;
+    vertical-align: top;
+    width: 38%;
+    text-align: center;
+    border-left: 2px dashed #e0e7ff;
+}
+
+/* Info grid rows */
+.info-section {
+    margin-bottom: 14px;
+}
+
+.info-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: #6366f1;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 2px;
+}
+
+.info-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e1b4b;
+}
+
+.info-value-sm {
+    font-size: 11px;
+    font-weight: 600;
+    color: #1e1b4b;
+}
+
+.divider-dots {
+    border: none;
+    border-top: 1px dotted #c7d2fe;
+    margin: 14px 0;
+}
+
+/* Client block */
+.client-block {
+    background: #eef2ff;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+}
+
+.client-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #312e81;
+}
+
+.client-meta {
+    font-size: 9px;
+    color: #6366f1;
+    margin-top: 2px;
+}
+
+/* Amount highlight */
+.amount-block {
+    background: #1e1b4b;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-top: 14px;
+}
+
+.amount-label {
+    font-size: 9px;
+    color: #a5b4fc;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 3px;
+}
+
+.amount-value {
+    font-size: 18px;
+    font-weight: 900;
+    color: #f59e0b;
+}
+
+/* QR column — large print + no border (quiet zone must stay intact for scanners) */
+.qr-img {
+    width: 220px;
+    height: 220px;
+    display: block;
+    margin: 0 auto;
+    background: #fff;
+}
+
+.qr-ref {
+    font-size: 9px;
+    font-weight: 700;
+    color: #312e81;
+    margin-top: 8px;
+    letter-spacing: .5px;
+}
+
+.qr-scan-hint {
+    font-size: 8px;
+    color: #818cf8;
+    margin-top: 3px;
+}
+
+/* Status badge */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    color: #ffffff;
+    background: #16a34a;
+}
+
+/* ── Perforated divider ──────────────────────────────── */
+.perforated {
+    border-top: 2px dashed #c7d2fe;
+    margin: 0 16px;
+    position: relative;
+}
+
+/* ── Stub / Tear-off ─────────────────────────────────── */
+.stub {
+    background: #f8f8ff;
+    padding: 14px 28px;
+}
+
+.stub-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.stub-label {
+    font-size: 8px;
+    color: #818cf8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.stub-value {
+    font-size: 11px;
+    font-weight: 700;
+    color: #312e81;
+}
+
+/* ── Footer bar ──────────────────────────────────────── */
+.ticket-footer {
+    background: #1e1b4b;
+    padding: 8px 28px;
+    text-align: center;
+}
+
+.footer-text {
+    font-size: 8px;
+    color: #818cf8;
+    letter-spacing: 1px;
+}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="ticket">
+
+    {# ── Header ─────────────────────────────────────── #}
+    <div class="ticket-header">
+        <div class="header-inner">
+            <table class="brand-row" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td style="vertical-align:bottom;">
+                        <div class="brand-name">&#127758; Tahwissa</div>
+                        <div class="brand-tagline">Agence de Voyages &amp; Evenements &mdash; Tunisie</div>
+                    </td>
+                    <td style="text-align:right;vertical-align:top;">
+                        <div class="ticket-label">Billet d&apos;Entree</div>
+                        <div class="ticket-number-top">{{ ticketNumber }}</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        {# Event title band #}
+        <div class="event-band">
+            <div class="event-title">{{ reservation.evenement ? reservation.evenement.titre|upper : 'EVENEMENT' }}</div>
+            {% if reservation.evenement and reservation.evenement.categorie %}
+                <div class="event-category">{{ reservation.evenement.categorie }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Accent bar ──────────────────────────────────── #}
+    <div class="accent-bar"></div>
+
+    {# ── Body ────────────────────────────────────────── #}
+    <div class="ticket-body">
+        <table class="body-table" cellpadding="0" cellspacing="0">
+            <tr>
+
+                {# ── Left: Event details ─────────────── #}
+                <td class="col-info">
+
+                    {# Client block #}
+                    <div class="client-block">
+                        <div class="client-name">
+                            {{ client ? client.name : 'Client #' ~ reservation.idUser }}
+                        </div>
+                        {% if client and client.email %}
+                            <div class="client-meta">{{ client.email }}</div>
+                        {% endif %}
+                    </div>
+
+                    {# Date + Time #}
+                    <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:4px;">
+                        <tr>
+                            <td style="width:50%;padding-right:12px;">
+                                <div class="info-section">
+                                    <div class="info-label">Date de l&apos;Evenement</div>
+                                    <div class="info-value">
+                                        {% if reservation.evenement and reservation.evenement.dateEvent %}
+                                            {{ reservation.evenement.dateEvent|date('d/m/Y') }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="width:50%;">
+                                <div class="info-section">
+                                    <div class="info-label">Heure</div>
+                                    <div class="info-value">
+                                        {% if reservation.evenement and reservation.evenement.heureEvent %}
+                                            {{ reservation.evenement.heureEvent|date('H:i') }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <hr class="divider-dots">
+
+                    {# Venue #}
+                    <div class="info-section">
+                        <div class="info-label">Lieu</div>
+                        <div class="info-value-sm">
+                            {% if reservation.evenement %}
+                                {{ reservation.evenement.lieu }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# Seats #}
+                    <div class="info-section">
+                        <div class="info-label">Nombre de Places</div>
+                        <div class="info-value">{{ reservation.nbPlacesReservees }}</div>
+                    </div>
+
+                    {# Amount #}
+                    {% if reservation.montantTotalTnd is not null %}
+                    <div class="amount-block">
+                        <div class="amount-label">Montant Total</div>
+                        <div class="amount-value">
+                            {{ reservation.montantTotalTnd|number_format(3, ',', ' ') }} TND
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="amount-block">
+                        <div class="amount-label">Entree</div>
+                        <div class="amount-value">Gratuite</div>
+                    </div>
+                    {% endif %}
+
+                </td>
+
+                {# ── Right: QR code ──────────────────── #}
+                <td class="col-qr">
+                    <img class="qr-img" src="{{ qrCode }}" width="220" height="220" alt="QR billet">
+                    <div class="qr-ref">{{ ticketNumber }}</div>
+                    <div class="qr-scan-hint">Code court (reference billet) — tout lecteur QR</div>
+                    <div>
+                        <span class="status-badge">
+                            &#10003; {{ reservation.statutLabel }}
+                        </span>
+                    </div>
+                </td>
+
+            </tr>
+        </table>
+    </div>
+
+    {# ── Perforated line ─────────────────────────────── #}
+    <div class="perforated"></div>
+
+    {# ── Stub ─────────────────────────────────────────── #}
+    <div class="stub">
+        <table class="stub-table" cellpadding="0" cellspacing="0">
+            <tr>
+                <td style="width:25%;padding-right:12px;">
+                    <div class="stub-label">Reference</div>
+                    <div class="stub-value">TAHWISSA-EVT-{{ reservation.id }}</div>
+                </td>
+                <td style="width:25%;padding-right:12px;">
+                    <div class="stub-label">Date de Reservation</div>
+                    <div class="stub-value">
+                        {{ reservation.dateReservation ? reservation.dateReservation|date('d/m/Y') : 'N/A' }}
+                    </div>
+                </td>
+                <td style="width:25%;padding-right:12px;">
+                    <div class="stub-label">Statut</div>
+                    <div class="stub-value" style="color:#16a34a;">{{ reservation.statutLabel }}</div>
+                </td>
+                <td style="width:25%;text-align:right;">
+                    <div class="stub-label">Genere le</div>
+                    <div class="stub-value">{{ generatedAt|date('d/m/Y H:i') }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {# ── Footer ──────────────────────────────────────── #}
+    <div class="ticket-footer">
+        <div class="footer-text">
+            Ce billet est personnel et non transferable &mdash; Tahwissa &mdash; contact@tahwissa.tn
+        </div>
+    </div>
+
+</div>{# /ticket #}
+</div>{# /page #}
+</body>
+</html>

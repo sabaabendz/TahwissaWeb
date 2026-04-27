@@ -55,6 +55,24 @@
             {{ form_errors(registrationForm.phone) }}
         </div>
 
+        <div class="mb-3">
+            <label for="{{ registrationForm.avatarFile.vars.id }}" class="form-label">
+                <i class="fas fa-image me-1"></i> Photo de profil (optionnel)
+            </label>
+            {{ form_widget(registrationForm.avatarFile, {
+                'attr': {
+                    'class': 'form-control',
+                    'accept': 'image/jpeg,image/png,image/gif',
+                    'data-max-size': '2097152'
+                }
+            }) }}
+            <div class="form-text">Formats acceptés : JPG, PNG, GIF. Taille max : 2MB.</div>
+            {{ form_errors(registrationForm.avatarFile) }}
+            <div id="avatar-preview-container" style="display:none;margin-top:10px;">
+                <img id="avatar-preview" src="" alt="Aperçu avatar" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:1px solid #e2e8f0;">
+            </div>
+        </div>
+
         <div class="form-floating">
             {{ form_widget(registrationForm.plainPassword.first, {'attr': {'class': 'form-control', 'placeholder': 'Mot de passe'}}) }}
             <label><i class="fas fa-lock me-1"></i> Mot de passe</label>
@@ -93,4 +111,50 @@
 </div>
 
 <script src="https://www.google.com/recaptcha/api.js?render={{ app.request.server.get('RECAPTCHA_PUBLIC_KEY') }}"></script>
+<script>
+(() => {
+    const input = document.getElementById('{{ registrationForm.avatarFile.vars.id }}');
+    const previewContainer = document.getElementById('avatar-preview-container');
+    const previewImage = document.getElementById('avatar-preview');
+
+    if (!input || !previewContainer || !previewImage) {
+        return;
+    }
+
+    input.addEventListener('change', function () {
+        const file = this.files && this.files[0] ? this.files[0] : null;
+        if (!file) {
+            previewContainer.style.display = 'none';
+            previewImage.src = '';
+            return;
+        }
+
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        const maxSize = Number(this.dataset.maxSize || 2097152);
+
+        if (!allowedTypes.includes(file.type)) {
+            alert('Format non autorisé. Utilisez JPG, PNG ou GIF.');
+            this.value = '';
+            previewContainer.style.display = 'none';
+            previewImage.src = '';
+            return;
+        }
+
+        if (file.size > maxSize) {
+            alert('Le fichier dépasse 2MB.');
+            this.value = '';
+            previewContainer.style.display = 'none';
+            previewImage.src = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            previewImage.src = String(e.target?.result || '');
+            previewContainer.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    });
+})();
+</script>
 {% endblock %}

@@ -365,9 +365,14 @@
         <div class="price">
           <span class="price-label">À partir de</span>
           <div>
-            <span class="price-value">{{ transport.prix }}</span>
-            <span class="price-currency">TND</span>
+            <span class="price-value">{{ (currencyService.convertPrice(transport.prix))|number_format(2, '.', ',') }}</span>
+            <span class="price-currency">{{ currencyService.getCurrencySymbol() }}</span>
           </div>
+          {% if currencyService.getUserCurrency() != 'TND' %}
+            <small style="color: #999; font-size: 0.8rem; margin-top: 4px;">
+              ({{ transport.prix|number_format(2, '.', ',') }} TND)
+            </small>
+          {% endif %}
         </div>
         <a href="{{ path('client_reservation_transport_new', {'transportId': transport.getIdTransport()}) }}" class="reserve-btn">
           <i class="fas fa-calendar-check"></i> Réserver

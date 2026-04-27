@@ -55,6 +55,8 @@
         </div>
     </div>
 
+    {% include 'partials/evenement_weather_widget.html.twig' %}
+
     <div class="form-row">
         <div class="form-group {{ form.prix.vars.errors|length > 0 ? 'has-error' : '' }}">
             {{ form_label(form.prix) }}

@@ -354,6 +354,16 @@ class AgentController extends AbstractController
         ]);
     }
 
+    #[Route('/evenement/{id}/pdf', name: 'agent_evenement_pdf', requirements: ['id' => '\d+'])]
+    public function evenementPdf(Request $request, Evenement $evenement): Response
+    {
+        $this->ensureRole($request);
+
+        return $this->render('pdf/evenement.html.twig', [
+            'evenement' => $evenement,
+        ]);
+    }
+
     // ===================== RESERVATION EVENEMENT =====================
 
     #[Route('/reservation-evenement', name: 'agent_reservation_evenement_index')]
@@ -435,6 +445,21 @@ class AgentController extends AbstractController
         return $this->redirectToRoute('agent_reservation_evenement_index');
     }
 
+    // ===================== QR CODE RESERVATION EVENEMENT =====================
+
+    #[Route('/reservation-evenement/{id}/qrcode', name: 'agent_reservation_evenement_qrcode', requirements: ['id' => '\d+'])]
+    public function reservationEvenementQrCode(Request $request, ReservationEvenement $reservation, QRCodeService $qrCodeService, UtilisateurRepository $utilisateurRepository): Response
+    {
+        $this->ensureRole($request);
+
+        return $this->render('agent/reservation_evenement/qrcode.html.twig', [
+            'reservation' => $reservation,
+            'qrCode'      => $qrCodeService->generateForEvenementReservation($reservation),
+            'qrExtension' => extension_loaded('gd') ? 'png' : 'svg',
+            'usersById'   => $utilisateurRepository->findAllIndexedById(),
+        ]);
+    }
+
     // ===================== AI DESCRIPTION GENERATOR =====================
 
     #[Route('/voyage/generate-description', name: 'agent_voyage_generate_description', methods: ['POST'])]
@@ -496,6 +521,7 @@ class AgentController extends AbstractController
         return $this->render('agent/reservation/qrcode.html.twig', [
             'reservation' => $reservation,
             'qrCode'      => $qrCodeService->generateForReservation($reservation),
+            'qrExtension' => extension_loaded('gd') ? 'png' : 'svg',
             'usersById'   => $userRepository->findAllIndexedById(),
         ]);
     }

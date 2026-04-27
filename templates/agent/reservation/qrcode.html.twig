@@ -41,7 +41,7 @@
             </div>
             <div>
                 <span style="color:var(--text-muted);">Client</span><br>
-                <strong>{{ usersById[reservation.idUtilisateur] is defined ? usersById[reservation.idUtilisateur].name : 'Client #' ~ reservation.idUtilisateur }}</strong>
+                <strong>{{ usersById[reservation.idUtilisateur|default(0)] is defined ? usersById[reservation.idUtilisateur|default(0)].name : 'Client #' ~ reservation.idUtilisateur }}</strong>
             </div>
             <div>
                 <span style="color:var(--text-muted);">Personnes</span><br>
@@ -63,7 +63,7 @@
         <a href="{{ path('agent_reservation_invoice', {id: reservation.id}) }}" class="btn btn-sm" style="background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;border:none;" target="_blank">
             <i class="fas fa-file-pdf"></i> Télécharger la Facture PDF
         </a>
-        <a href="{{ qrCode }}" download="qrcode-reservation-{{ reservation.id }}.png" class="btn btn-accent btn-sm">
+        <a href="{{ qrCode }}" download="qrcode-reservation-{{ reservation.id }}.{{ qrExtension }}" class="btn btn-accent btn-sm">
             <i class="fas fa-download"></i> Télécharger le QR Code
         </a>
         <a href="{{ path('agent_reservation_show', {id: reservation.id}) }}" class="btn btn-outline btn-sm">

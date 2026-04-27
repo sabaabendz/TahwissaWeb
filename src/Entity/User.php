@@ -90,6 +90,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(name: 'reset_token', type: 'string', length: 255, nullable: true)]
+    private ?string $resetToken = null;
+
+    #[ORM\Column(name: 'reset_token_expires_at', type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $resetTokenExpiresAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -185,6 +191,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     public function getAvatarUrl(): ?string
+    {
+        if ($this->avatarUrl === null || $this->avatarUrl === '') {
+            return null;
+        }
+
+        if (str_starts_with($this->avatarUrl, '/')) {
+            return $this->avatarUrl;
+        }
+
+        return '/uploads/avatars/' . ltrim($this->avatarUrl, '/');
+    }
+
+    public function getAvatarPath(): ?string
     {
         return $this->avatarUrl;
     }
@@ -394,5 +413,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function onPreUpdate(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    public function getResetToken(): ?string
+    {
+        return $this->resetToken;
+    }
+
+    public function setResetToken(?string $resetToken): static
+    {
+        $this->resetToken = $resetToken;
+
+        return $this;
+    }
+
+    public function getResetTokenExpiresAt(): ?\DateTimeInterface
+    {
+        return $this->resetTokenExpiresAt;
+    }
+
+    public function setResetTokenExpiresAt(?\DateTimeInterface $resetTokenExpiresAt): static
+    {
+        $this->resetTokenExpiresAt = $resetTokenExpiresAt;
+
+        return $this;
     }
 }

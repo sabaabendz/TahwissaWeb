@@ -2,8 +2,110 @@
 
 {% block title %}Connexion{% endblock %}
 
+{% block extra_css %}
+/* ── Human Verification UI ──────────────────────────────────── */
+.verify-section {
+    margin-bottom: 18px;
+}
+
+.btn-verify {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px dashed #7C4DFF;
+    border-radius: var(--radius-sm);
+    background: rgba(124, 77, 255, 0.06);
+    color: #7C4DFF;
+    font-weight: 600;
+    font-size: 0.92rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: var(--transition);
+}
+.btn-verify:hover {
+    background: rgba(124, 77, 255, 0.14);
+    border-style: solid;
+    transform: translateY(-1px);
+}
+.btn-verify:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Status card */
+#verify-status {
+    display: none;
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-size: 0.88rem;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+}
+#verify-status.show { display: flex; }
+
+#verify-status.state-loading {
+    background: rgba(0, 176, 255, 0.08);
+    border: 1px solid rgba(0, 176, 255, 0.3);
+    color: #0077b6;
+}
+#verify-status.state-success {
+    background: rgba(0, 200, 83, 0.08);
+    border: 1px solid rgba(0, 200, 83, 0.4);
+    color: #00704a;
+}
+#verify-status.state-error {
+    background: rgba(255, 23, 68, 0.07);
+    border: 1px solid rgba(255, 23, 68, 0.3);
+    color: #c62828;
+}
+
+/* Spinner */
+.spinner {
+    width: 20px; height: 20px;
+    border: 2.5px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+    flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Verified form border */
+.auth-card.verified {
+    box-shadow: 0 0 0 3px rgba(0, 200, 83, 0.45), var(--shadow);
+    transition: box-shadow 0.4s ease;
+}
+
+/* Login button disabled look */
+.btn-auth:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Checkmark badge */
+.verify-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--success);
+    background: rgba(0, 200, 83, 0.1);
+    border-radius: 20px;
+    padding: 3px 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+{% endblock %}
+
 {% block body %}
-<div class="auth-card">
+<div class="auth-card" id="auth-card">
     <div class="auth-logo">
         <h1><i class="fas fa-plane-departure"></i> Tahwissa</h1>
         <p>Connectez-vous à votre compte</p>
@@ -56,12 +158,32 @@
             </a>
         </div>
 
-        {# {{ form_widget(loginForm.captcha) }} #}
-        {# {{ form_errors(loginForm.captcha) }} #}
+        {# ── Human Verification Step ──────────────────────────────────── #}
+        <div class="verify-section">
+            <button type="button" id="btn-verify-human" class="btn-verify">
+                <i class="fas fa-camera" id="verify-icon"></i>
+                <span id="verify-btn-text">Vérifier que je suis humain</span>
+            </button>
 
-        <button type="submit" class="btn-auth">
-            <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+            {# Status card (hidden until verification starts) #}
+            <div id="verify-status" role="status" aria-live="polite">
+                <div class="spinner" id="verify-spinner" style="display:none;"></div>
+                <i id="verify-status-icon" class="fas" style="font-size:1.2rem;flex-shrink:0;display:none;"></i>
+                <div>
+                    <div id="verify-status-title" style="font-weight:600;"></div>
+                    <div id="verify-status-msg" style="margin-top:2px;opacity:0.85;font-size:0.82rem;"></div>
+                </div>
+                <button type="button" id="btn-retry" class="btn btn-sm btn-outline-danger ms-auto" style="display:none;white-space:nowrap;" onclick="resetVerification()">
+                    <i class="fas fa-redo me-1"></i>Réessayer
+                </button>
+            </div>
+        </div>
+        {# ── End Human Verification ──────────────────────────────────── #}
+
+        <button type="submit" class="btn-auth" id="btn-login" disabled>
+            <i class="fas fa-lock me-2" id="login-lock-icon"></i><span id="login-btn-text">Se connecter</span>
         </button>
+
     {{ form_end(loginForm) }}
 
     <div class="mt-3 d-grid gap-2">
@@ -85,3 +207,151 @@
 
 <script src="https://www.google.com/recaptcha/api.js?render={{ app.request.server.get('RECAPTCHA_PUBLIC_KEY') }}"></script>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    'use strict';
+
+    // ── DOM refs ──────────────────────────────────────────────────────
+    const btnVerify     = document.getElementById('btn-verify-human');
+    const btnLogin      = document.getElementById('btn-login');
+    const authCard      = document.getElementById('auth-card');
+    const statusBox     = document.getElementById('verify-status');
+    const statusTitle   = document.getElementById('verify-status-title');
+    const statusMsg     = document.getElementById('verify-status-msg');
+    const statusIcon    = document.getElementById('verify-status-icon');
+    const spinner       = document.getElementById('verify-spinner');
+    const btnRetry      = document.getElementById('btn-retry');
+    const verifyBtnText = document.getElementById('verify-btn-text');
+    const verifyIcon    = document.getElementById('verify-icon');
+    const loginLockIcon = document.getElementById('login-lock-icon');
+    const loginBtnText  = document.getElementById('login-btn-text');
+
+    // ── State helpers ─────────────────────────────────────────────────
+    function showStatus(state, title, msg) {
+        statusBox.className = 'show ' + 'state-' + state;
+        statusTitle.textContent = title;
+        statusMsg.textContent = msg;
+
+        // Icons
+        spinner.style.display    = state === 'loading' ? 'block' : 'none';
+        statusIcon.style.display = state !== 'loading' ? 'block' : 'none';
+        btnRetry.style.display   = state === 'error'   ? 'block' : 'none';
+
+        if (state === 'success') {
+            statusIcon.className = 'fas fa-check-circle';
+            statusIcon.style.color = 'var(--success)';
+        } else if (state === 'error') {
+            statusIcon.className = 'fas fa-times-circle';
+            statusIcon.style.color = 'var(--danger)';
+        }
+    }
+
+    function setVerifying(active) {
+        btnVerify.disabled = active;
+        verifyBtnText.textContent = active ? 'Vérification en cours…' : 'Vérifier que je suis humain';
+        verifyIcon.className = active ? 'fas fa-circle-notch fa-spin' : 'fas fa-camera';
+    }
+
+    function setVerified() {
+        // Green card border
+        authCard.classList.add('verified');
+
+        // Update verify button
+        btnVerify.disabled = true;
+        btnVerify.style.borderColor = 'var(--success)';
+        btnVerify.style.color       = 'var(--success)';
+        btnVerify.style.background  = 'rgba(0,200,83,0.07)';
+        verifyIcon.className = 'fas fa-check-circle';
+        verifyBtnText.textContent = 'Humain vérifié ✓';
+
+        // Enable login button
+        btnLogin.disabled = false;
+        loginLockIcon.className = 'fas fa-sign-in-alt me-2';
+        loginBtnText.textContent = 'Se connecter';
+    }
+
+    // ── Reset ─────────────────────────────────────────────────────────
+    window.resetVerification = function () {
+        authCard.classList.remove('verified');
+        btnVerify.disabled = false;
+        btnVerify.style.borderColor = '';
+        btnVerify.style.color       = '';
+        btnVerify.style.background  = '';
+        verifyIcon.className = 'fas fa-camera';
+        verifyBtnText.textContent = 'Vérifier que je suis humain';
+        btnLogin.disabled = true;
+        loginLockIcon.className = 'fas fa-lock me-2';
+        loginBtnText.textContent = 'Se connecter';
+        statusBox.className = '';
+    };
+
+    // ── Main verification call ────────────────────────────────────────
+    btnVerify.addEventListener('click', async function () {
+        setVerifying(true);
+        showStatus('loading',
+            'Fenêtre webcam en cours d\'ouverture…',
+            'Une fenêtre OpenCV va s\'ouvrir sur votre bureau. Placez-vous face à la caméra, puis appuyez sur ESPACE pour capturer.'
+        );
+
+        let res;
+        try {
+            res = await fetch('{{ path('app_verify_human') }}', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin'
+            });
+        } catch (networkErr) {
+            // True network failure (server unreachable, CORS, etc.)
+            showStatus('error',
+                'Erreur réseau (HTTP)',
+                'Impossible d\'atteindre /verify-human. Détail: ' + networkErr.message
+            );
+            setVerifying(false);
+            return;
+        }
+
+        // Try to read body as text first so we always have something to show
+        const rawText = await res.text();
+
+        if (!res.ok) {
+            // Server returned 4xx / 5xx — show the HTTP status
+            const preview = rawText.length > 200 ? rawText.substring(0, 200) + '…' : rawText;
+            showStatus('error',
+                'Erreur serveur HTTP ' + res.status,
+                'Réponse: ' + preview.replace(/<[^>]+>/g, ' ').trim()
+            );
+            setVerifying(false);
+            return;
+        }
+
+        // Try to parse JSON
+        let data;
+        try {
+            data = JSON.parse(rawText);
+        } catch (parseErr) {
+            showStatus('error',
+                'Réponse invalide du serveur',
+                'Le serveur n\'a pas retourné du JSON. Début: ' + rawText.substring(0, 150).replace(/<[^>]+>/g, ' ').trim()
+            );
+            setVerifying(false);
+            return;
+        }
+
+        if (data.success) {
+            showStatus('success',
+                'Humain vérifié ✓',
+                data.message || 'Visage détecté avec succès. Vous pouvez maintenant vous connecter.'
+            );
+            setVerified();
+        } else {
+            const msg = data.message || 'Aucun visage détecté. Veuillez réessayer.';
+            showStatus('error', 'Vérification échouée', msg);
+            setVerifying(false);
+        }
+    });
+})();
+</script>
+{% endblock %}
+
