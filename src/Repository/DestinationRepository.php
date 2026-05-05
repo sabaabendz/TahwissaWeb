@@ -28,4 +28,48 @@ class DestinationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Récupère toutes les destinations avec leurs points d'intérêt
+     * (Évite le problème N+1)
+     * 
+     * @return Destination[]
+     */
+    public function findAllWithPointsInteret(): array
+    {
+        return $this->createQueryBuilder('d')
+            ->leftJoin('d.pointsInteret', 'p')
+            ->addSelect('p')
+            ->orderBy('d.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Récupère les destinations paginées avec leurs points d'intérêt
+     * 
+     * @return Destination[]
+     */
+    public function findPaginatedWithPointsInteret(int $offset, int $limit): array
+    {
+        return $this->createQueryBuilder('d')
+            ->leftJoin('d.pointsInteret', 'p')
+            ->addSelect('p')
+            ->orderBy('d.nom', 'ASC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Compte le nombre total de destinations
+     */
+    public function countDestinations(): int
+    {
+        return $this->createQueryBuilder('d')
+            ->select('COUNT(d.idDestination)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

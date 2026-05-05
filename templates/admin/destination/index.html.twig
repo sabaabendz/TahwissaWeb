@@ -22,7 +22,7 @@
         <div class="stat-card blue">
             <div class="stat-icon"><i class="fas fa-globe"></i></div>
             <div class="stat-info">
-                <h3>{{ destinations|length }}</h3>
+                <h3>{{ total }}</h3>
                 <p>Total Destinations</p>
             </div>
         </div>
@@ -80,4 +80,50 @@
             </tbody>
         </table>
     </div>
+
+    {# PAGINATION #}
+    {% if totalPages is defined and totalPages > 1 %}
+    <div class="pagination" style="display: flex; justify-content: center; gap: 8px; margin-top: 24px; flex-wrap: wrap;">
+        {% if currentPage > 1 %}
+            <a href="{{ path('admin_destination_index', {'page': currentPage - 1}) }}" class="btn btn-outline btn-sm">
+                <i class="fas fa-chevron-left"></i> Précédent
+            </a>
+        {% endif %}
+        
+        {% set startPage = max(1, currentPage - 2) %}
+        {% set endPage = min(totalPages, currentPage + 2) %}
+        
+        {% if startPage > 1 %}
+            <a href="{{ path('admin_destination_index', {'page': 1}) }}" class="btn btn-outline btn-sm">1</a>
+            {% if startPage > 2 %}
+                <span class="btn btn-outline btn-sm disabled">...</span>
+            {% endif %}
+        {% endif %}
+        
+        {% for p in startPage..endPage %}
+            {% if p == currentPage %}
+                <span class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #1565C0, #7C4DFF);">{{ p }}</span>
+            {% else %}
+                <a href="{{ path('admin_destination_index', {'page': p}) }}" class="btn btn-outline btn-sm">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if endPage < totalPages %}
+            {% if endPage < totalPages - 1 %}
+                <span class="btn btn-outline btn-sm disabled">...</span>
+            {% endif %}
+            <a href="{{ path('admin_destination_index', {'page': totalPages}) }}" class="btn btn-outline btn-sm">{{ totalPages }}</a>
+        {% endif %}
+        
+        {% if currentPage < totalPages %}
+            <a href="{{ path('admin_destination_index', {'page': currentPage + 1}) }}" class="btn btn-outline btn-sm">
+                Suivant <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    
+    <div style="text-align: center; margin-top: 16px; color: var(--text-muted); font-size: 0.85rem;">
+        Affichage de {{ destinations|length }} destination(s) sur {{ total }} au total
+    </div>
+    {% endif %}
 {% endblock %}
