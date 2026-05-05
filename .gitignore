@@ -16,3 +16,8 @@ test_gemini.php
 test_weather.php
 list_models.php
 test_cookie.txt
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###

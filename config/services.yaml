@@ -93,6 +93,10 @@ services:
     App\Service\OpenRouterGeminiService:
         arguments:
             $apiKey: '%env(OPENROUTER_API_KEY)%'
+
+    App\Service\ReclamationAgentService:
+        arguments:
+            $openRouterApiKey: '%env(OPENROUTER_API_KEY)%'
     
         
         

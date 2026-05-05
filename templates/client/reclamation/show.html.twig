@@ -57,4 +57,361 @@
     </div>
     {% endif %}
 </div>
+
+{# ══════════════════════════════════════════════════════════ #}
+{# ═══ AI SUPPORT AGENT PANEL ═══ #}
+{# ══════════════════════════════════════════════════════════ #}
+
+<style>
+/* ── Agent Container ── */
+.agent-panel {
+    margin-top: 32px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+/* ── Agent Header ── */
+.agent-header {
+    background: linear-gradient(135deg, #0ea5e9, #6366f1, #8b5cf6);
+    padding: 20px 24px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.agent-header .agent-avatar {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+}
+.agent-header h3 {
+    margin: 0; font-size: 1.1rem; font-weight: 700;
+}
+.agent-header p {
+    margin: 2px 0 0; font-size: 0.78rem; opacity: 0.85;
+}
+.agent-header .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #4ade80; display: inline-block; margin-right: 6px;
+    animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* ── Reclamation Context Badge ── */
+.agent-context {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, rgba(14,165,233,0.06), rgba(139,92,246,0.06));
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-size: 0.8rem; color: #64748b;
+}
+.agent-context .ctx-tag {
+    background: rgba(99,102,241,0.1);
+    color: #6366f1;
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+/* ── Messages Area ── */
+.agent-messages {
+    padding: 20px 24px;
+    min-height: 200px;
+    max-height: 420px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    scroll-behavior: smooth;
+}
+.agent-msg {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    word-wrap: break-word;
+    animation: msgFadeIn 0.3s ease;
+}
+@keyframes msgFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.agent-msg.bot {
+    background: linear-gradient(135deg, #f0f4ff, #f5f3ff);
+    color: #1e293b;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    border: 1px solid rgba(99,102,241,0.08);
+}
+.agent-msg.user {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+.agent-msg.escalation {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    border: 1px solid rgba(245,158,11,0.2);
+    font-weight: 500;
+}
+
+/* ── Typing Indicator ── */
+.agent-typing {
+    display: flex; gap: 5px; align-self: flex-start;
+    padding: 14px 18px;
+    background: #f0f4ff;
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+}
+.agent-typing span {
+    width: 8px; height: 8px;
+    background: #94a3b8;
+    border-radius: 50%;
+    animation: agentBounce 1.4s infinite;
+}
+.agent-typing span:nth-child(2) { animation-delay: 0.2s; }
+.agent-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes agentBounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-8px); }
+}
+
+/* ── Quick Suggestions ── */
+.agent-suggestions {
+    padding: 10px 24px 14px;
+    display: flex; flex-wrap: wrap; gap: 8px;
+}
+.agent-suggestions button {
+    background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.08));
+    border: 1px solid rgba(99,102,241,0.15);
+    border-radius: 50px;
+    padding: 7px 16px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    color: #6366f1;
+    font-weight: 500;
+}
+.agent-suggestions button:hover {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+}
+
+/* ── Input Area ── */
+.agent-input-area {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(0,0,0,0.04);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: rgba(248,250,252,0.5);
+}
+.agent-input-area input {
+    flex: 1;
+    border: 2px solid #e2e8f0;
+    border-radius: 50px;
+    padding: 12px 20px;
+    font-size: 0.88rem;
+    outline: none;
+    transition: all 0.25s ease;
+    background: white;
+}
+.agent-input-area input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+}
+.agent-input-area button {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.25s ease;
+    font-size: 1rem;
+}
+.agent-input-area button:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 15px rgba(99,102,241,0.4);
+}
+.agent-input-area button:disabled {
+    opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none;
+}
+
+/* ── Dark Mode ── */
+body.dark .agent-panel { background: #1e293b; border-color: #334155; }
+body.dark .agent-msg.bot { background: linear-gradient(135deg, #1e293b, #2d2948); color: #e2e8f0; border-color: #475569; }
+body.dark .agent-msg.escalation { background: linear-gradient(135deg, #422006, #78350f); color: #fde68a; border-color: #92400e; }
+body.dark .agent-context { background: rgba(99,102,241,0.08); border-color: #334155; color: #94a3b8; }
+body.dark .agent-context .ctx-tag { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+body.dark .agent-input-area { border-top-color: #334155; background: rgba(15,23,42,0.5); }
+body.dark .agent-input-area input { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+body.dark .agent-input-area input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+body.dark .agent-suggestions button { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.25); color: #a5b4fc; }
+body.dark .agent-suggestions button:hover { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; }
+body.dark .agent-typing { background: #2d2948; }
+body.dark .agent-typing span { background: #64748b; }
+</style>
+
+<div class="agent-panel" id="agent-panel">
+    <div class="agent-header">
+        <div class="agent-avatar">🛟</div>
+        <div>
+            <h3>Tahwissa Support Agent</h3>
+            <p><span class="status-dot"></span>Assistant IA — En ligne</p>
+        </div>
+    </div>
+
+    <div class="agent-context">
+        <i class="fas fa-ticket-alt"></i>
+        <span>Réclamation <strong>#{{ reclamation.id }}</strong></span>
+        <span class="ctx-tag">{{ reclamation.type ?? 'Général' }}</span>
+        <span class="ctx-tag">{{ reclamation.statutLabel }}</span>
+    </div>
+
+    <div class="agent-messages" id="agent-messages">
+        <div class="agent-msg bot">
+            Bonjour ! 👋 Je suis l'<strong>Agent Support Tahwissa</strong>, votre assistant IA dédié aux réclamations.
+            <br><br>
+            J'ai lu votre réclamation <strong>« {{ reclamation.titre }} »</strong> et je suis là pour vous aider.
+            Comment puis-je vous assister ? 😊
+        </div>
+    </div>
+
+    <div class="agent-suggestions" id="agent-suggestions">
+        {% if reclamation.statut == 'EN_ATTENTE' %}
+            <button onclick="agentQuick(this)">⏳ Quand sera traitée ma réclamation ?</button>
+        {% endif %}
+        {% if reclamation.type == 'Paiement' %}
+            <button onclick="agentQuick(this)">💳 Problème avec mon paiement</button>
+            <button onclick="agentQuick(this)">🔄 Comment obtenir un remboursement ?</button>
+        {% endif %}
+        {% if reclamation.type == 'Technique' %}
+            <button onclick="agentQuick(this)">🐛 J'ai un bug sur la plateforme</button>
+            <button onclick="agentQuick(this)">📱 L'application ne fonctionne pas</button>
+        {% endif %}
+        {% if reclamation.type == 'Service Client' %}
+            <button onclick="agentQuick(this)">📞 Comment contacter un agent ?</button>
+        {% endif %}
+        <button onclick="agentQuick(this)">📄 Comment annuler une réservation ?</button>
+        <button onclick="agentQuick(this)">🎫 Où trouver mon QR code ?</button>
+        <button onclick="agentQuick(this)">👤 Je veux parler à un humain</button>
+    </div>
+
+    <div class="agent-input-area">
+        <input type="text" id="agent-input" placeholder="Décrivez votre problème ou posez une question..."
+               onkeypress="if(event.key==='Enter') agentSend()">
+        <button id="agent-send-btn" onclick="agentSend()" title="Envoyer">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+(function() {
+    const AGENT_URL = '{{ path("client_reclamation_agent_chat", {id: reclamation.id}) }}';
+    let agentHistory = [];
+
+    window.agentQuick = function(btn) {
+        const text = btn.textContent.trim();
+        document.getElementById('agent-input').value = text;
+        agentSend();
+        document.getElementById('agent-suggestions').style.display = 'none';
+    };
+
+    window.agentSend = function() {
+        const input = document.getElementById('agent-input');
+        const message = input.value.trim();
+        if (!message) return;
+
+        addAgentMsg(message, 'user');
+        input.value = '';
+        input.disabled = true;
+        document.getElementById('agent-send-btn').disabled = true;
+
+        const typing = showAgentTyping();
+
+        fetch(AGENT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({
+                message: message,
+                history: agentHistory,
+            }),
+        })
+        .then(r => r.json())
+        .then(data => {
+            removeAgentTyping(typing);
+            input.disabled = false;
+            document.getElementById('agent-send-btn').disabled = false;
+            input.focus();
+
+            agentHistory.push({ role: 'user', content: message });
+            agentHistory.push({ role: 'assistant', content: data.reply });
+
+            if (agentHistory.length > 24) {
+                agentHistory = agentHistory.slice(-20);
+            }
+
+            const msgType = data.escalated ? 'escalation' : 'bot';
+            addAgentMsg(data.reply, msgType);
+        })
+        .catch(() => {
+            removeAgentTyping(typing);
+            input.disabled = false;
+            document.getElementById('agent-send-btn').disabled = false;
+            addAgentMsg('❌ Erreur de connexion. Veuillez réessayer.', 'bot');
+        });
+    };
+
+    function addAgentMsg(text, type) {
+        const container = document.getElementById('agent-messages');
+        const msg = document.createElement('div');
+        msg.classList.add('agent-msg', type);
+
+        if (type === 'bot' || type === 'escalation') {
+            let html = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+            msg.innerHTML = html;
+        } else {
+            msg.textContent = text;
+        }
+
+        container.appendChild(msg);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function showAgentTyping() {
+        const container = document.getElementById('agent-messages');
+        const typing = document.createElement('div');
+        typing.className = 'agent-typing';
+        typing.innerHTML = '<span></span><span></span><span></span>';
+        container.appendChild(typing);
+        container.scrollTop = container.scrollHeight;
+        return typing;
+    }
+
+    function removeAgentTyping(el) {
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+    }
+})();
+</script>
 {% endblock %}

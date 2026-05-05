@@ -33,6 +33,7 @@ use App\Service\StripeVoyagePaymentService;
 use App\Service\QRCodeService;
 use App\Service\InvoiceService;
 use App\Service\TravelChatbotService;
+use App\Service\ReclamationAgentService;
 use App\Service\TwilioSmsService;
 use App\Service\EmailNotificationService;
 use App\Service\WeatherService;
@@ -956,6 +957,34 @@ public function voyageReact(
         }
 
         return $this->redirectToRoute('client_reclamation_index');
+    }
+
+    #[Route('/reclamation/{id}/agent', name: 'client_reclamation_agent_chat', requirements: ['id' => '\\d+'], methods: ['POST'])]
+    public function reclamationAgentChat(Request $request, Reclamation $reclamation, ReclamationAgentService $agentService): JsonResponse
+    {
+        $this->ensureRole($request);
+        $userId = (int) $request->getSession()->get('user_id', 0);
+
+        // Verify ownership
+        if ($reclamation->getIdUser() !== $userId) {
+            return new JsonResponse(['success' => false, 'reply' => 'Accès refusé.'], 403);
+        }
+
+        $data    = json_decode($request->getContent(), true);
+        $message = trim($data['message'] ?? '');
+        $history = $data['history'] ?? [];
+
+        if (empty($message)) {
+            return new JsonResponse(['success' => false, 'reply' => 'Message vide.'], 400);
+        }
+
+        $result = $agentService->chat($reclamation, $message, $history, $userId);
+
+        return new JsonResponse([
+            'success'   => $result['success'],
+            'reply'     => $result['reply'],
+            'escalated' => $result['escalated'],
+        ]);
     }
 
     private function ensureRole(Request $request): void
